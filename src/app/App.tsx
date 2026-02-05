@@ -1,0 +1,164 @@
+import { useState, useEffect } from "react";
+import { WelcomeScreen } from "@/app/components/WelcomeScreen";
+import { AuthDialog } from "@/app/components/AuthDialog";
+import { Homepage } from "@/app/components/Homepage";
+import { ProductsScreen } from "@/app/components/ProductsScreen";
+import { ProductLocator } from "@/app/components/ProductLocator";
+import { EducationScreen } from "@/app/components/EducationScreen";
+import { CommunityScreen } from "@/app/components/CommunityScreen";
+import { AskExpertScreen } from "@/app/components/AskExpertScreen";
+import { PeriodTracker } from "@/app/components/PeriodTracker";
+import { HealthTipsScreen } from "@/app/components/HealthTipsScreen";
+import { FeedbackScreen } from "@/app/components/FeedbackScreen";
+import { SettingsScreen } from "@/app/components/SettingsScreen";
+import { ResetPasswordScreen } from "@/app/components/ResetPasswordScreen";
+import { Toaster } from "@/app/components/ui/sonner";
+import { getSupabaseClient } from "@/utils/supabase/client";
+
+type Screen = "welcome" | "home" | "products" | "locator" | "education" | "community" | "ask-expert" | "tracker" | "health-tips" | "feedback" | "settings" | "reset-password";
+type AuthMode = "signup" | "login" | "reset";
+
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState<Screen>("welcome");
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("signup");
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState<string>("");
+
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  const checkSession = async () => {
+    try {
+      const supabase = getSupabaseClient();
+
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.access_token) {
+        setAccessToken(session.access_token);
+        setIsAuthenticated(true);
+
+        const name = session.user?.user_metadata?.name || "there";
+        setUserName(name);
+
+        setCurrentScreen("home");
+      }
+    } catch (error) {
+      console.error("Session check error:", error);
+    }
+  };
+
+  const handleSignUpClick = () => {
+    setAuthMode("signup");
+    setAuthDialogOpen(true);
+  };
+
+  const handleLoginClick = () => {
+    setAuthMode("login");
+    setAuthDialogOpen(true);
+  };
+
+  const handleForgotPasswordClick = () => {
+    setAuthDialogOpen(false);
+    setCurrentScreen("reset-password");
+  };
+
+  const handleAuthSuccess = async (token: string) => {
+    setAccessToken(token);
+    setIsAuthenticated(true);
+    
+    try {
+      const supabase = getSupabaseClient();
+      const { data: { user } } = await supabase.auth.getUser(token);
+      
+      if (user) {
+        // Try to get name from user metadata first
+        const name = user.user_metadata?.name || "there";
+        setUserName(name);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setUserName("there");
+    }
+    
+    setCurrentScreen("home");
+    setAuthDialogOpen(false);
+  };
+
+  const handleLogout = () => {
+    setAccessToken("");
+    setIsAuthenticated(false);
+    setUserName("");
+    setCurrentScreen("welcome");
+  };
+
+  const handleNavigate = (screen: string) => {
+    setCurrentScreen(screen as Screen);
+  };
+
+  const handleBack = () => {
+    setCurrentScreen("home");
+  };
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case "welcome":
+        return (
+          <WelcomeScreen
+            onSignUp={handleSignUpClick}
+            onLogin={handleLoginClick}
+          />
+        );
+      case "home":
+        return <Homepage onNavigate={handleNavigate} userName={userName} onLogout={handleLogout} />;
+
+      case "products":
+        return <ProductsScreen onBack={handleBack} onNavigateToLocator={() => setCurrentScreen("locator")} />;
+      case "locator":
+        return <ProductLocator onBack={handleBack} />;
+      case "education":
+        return <EducationScreen onBack={handleBack} accessToken={accessToken} />;
+      case "community":
+        return <CommunityScreen onBack={handleBack} accessToken={accessToken} />;
+      case "ask-expert":
+        return <AskExpertScreen onBack={handleBack} accessToken={accessToken} />;
+      case "tracker":
+        return <PeriodTracker onBack={handleBack} accessToken={accessToken} />;
+      case "health-tips":
+        return <HealthTipsScreen onBack={handleBack} accessToken={accessToken} />;
+      case "feedback":
+        return <FeedbackScreen onBack={handleBack} />;
+      case "settings":
+        return <SettingsScreen onBack={handleBack} onLogout={handleLogout} accessToken={accessToken} />;
+      case "reset-password":
+        return (
+          <ResetPasswordScreen
+            onDone={() => {
+              setCurrentScreen("welcome");
+              setAuthMode("login");
+              setAuthDialogOpen(true);
+            }}
+          />
+        );
+      default:
+        return <Homepage onNavigate={handleNavigate} userName={userName} onLogout={handleLogout} />;
+
+    }
+  };
+
+  return (
+    <>
+      {renderScreen()}
+      <AuthDialog
+        open={authDialogOpen}
+        onClose={() => setAuthDialogOpen(false)}
+        mode={authMode}
+        onSuccess={handleAuthSuccess}
+        onForgotPassword={handleForgotPasswordClick}
+      />
+      <Toaster />
+    </>
+  );
+}
