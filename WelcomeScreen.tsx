@@ -1,6 +1,6 @@
 import { Button } from "@/app/components/ui/button";
 import { Card } from "@/app/components/ui/card";
-import logoImage from "figma:asset/ce6a3ec9562f1270d6bfa0cc1141d0e067c0c231.png";
+import logoImage from "@/asset/ce6a3ec9562f1270d6bfa0cc1141d0e067c0c231.png";
 
 interface WelcomeScreenProps {
   onSignUp: () => void;
