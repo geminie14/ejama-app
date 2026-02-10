@@ -109,7 +109,7 @@ export function Homepage({ onNavigate, userName, onLogout }: HomepageProps) {
 
             <div className="mt-4">
               <div className="text-lg sm:text-xl font-semibold text-[#594F62]">
-                Hi, {userName} <span className="ml-1">👋</span>
+                Hi, {userName?.split(" ")[0] || "there"} <span className="ml-1">👋</span>
               </div>
               <div className="text-sm text-[#776B7D]">
                 What would you like to explore today?
@@ -117,14 +117,6 @@ export function Homepage({ onNavigate, userName, onLogout }: HomepageProps) {
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            className="rounded-xl border-[#D4C4EC] bg-white text-[#594F62] hover:bg-[#F6F2FF]"
-            onClick={onLogout}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
         </div>
 
         {/* Primary Actions (BIG) */}
@@ -189,6 +181,13 @@ export function Homepage({ onNavigate, userName, onLogout }: HomepageProps) {
             icon={<Settings className="w-6 h-6" />}
             onClick={() => onNavigate("settings")}
           />
+          <Tile
+            title="Logout"
+            subtitle="Sign out of your account"
+            icon={<LogOut className="w-6 h-6" />}
+            onClick={onLogout}
+          />
+
         </div>
 
         {/* Footer */}
