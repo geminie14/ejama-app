@@ -117,6 +117,24 @@ export function Homepage({ onNavigate, userName, userAvatar, onLogout }: Homepag
               </div>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => onNavigate("settings")}
+            className="h-11 w-11 rounded-full overflow-hidden border border-[#D4C4EC] bg-white flex items-center justify-center shadow-sm hover:shadow-md transition"
+            aria-label="Open settings"
+          >
+            {userAvatar ? (
+              <img
+                src={userAvatar}
+                alt="Avatar"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="text-sm font-semibold text-[#594F62]">
+                {userName?.trim()?.slice(0, 1)?.toUpperCase() || "U"}
+              </span>
+            )}
+          </button>
 
         </div>
 
@@ -182,13 +200,18 @@ export function Homepage({ onNavigate, userName, userAvatar, onLogout }: Homepag
             icon={<Settings className="w-6 h-6" />}
             onClick={() => onNavigate("settings")}
           />
-          <Tile
-            title="Logout"
-            subtitle="Sign out of your account"
-            icon={<LogOut className="w-6 h-6" />}
-            onClick={onLogout}
-          />
+         
+        </div>
 
+                <div className="mt-6 flex justify-center">
+          <Button
+            variant="outline"
+            className="rounded-xl border-[#D4C4EC] bg-white text-[#594F62] hover:bg-[#F6F2FF]"
+            onClick={onLogout}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
         </div>
 
         {/* Footer */}
