@@ -143,6 +143,8 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
   const supabase = getSupabaseClient();
   await supabase.auth.signOut();
 
+  localStorage.removeItem(SCREEN_KEY);
+
   setAccessToken("");
   setIsAuthenticated(false);
   setUserName("");
