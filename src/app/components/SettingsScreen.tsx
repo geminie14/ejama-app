@@ -7,7 +7,7 @@ import { Label } from "@/app/components/ui/label";
 import { Input } from "@/app/components/ui/input";
 import { getSupabaseClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
-import { projectId } from "/utils/supabase/info";
+import { projectId } from "@/utils/supabase/info";
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -35,7 +35,13 @@ export function SettingsScreen({ onBack, onLogout, accessToken }: SettingsScreen
       if (user) {
         setUserName(user.user_metadata?.name || "");
         setUserEmail(user.email || "");
-        setProfilePicture(user.user_metadata?.profile_picture || "");
+        setProfilePicture(
+  user.user_metadata?.profile_picture ||
+  user.user_metadata?.avatar_url ||
+  user.user_metadata?.picture ||
+  ""
+);
+
       }
     } catch (error) {
       console.error("Error loading user data:", error);
