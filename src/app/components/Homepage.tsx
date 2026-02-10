@@ -31,6 +31,7 @@ type Screen =
 type HomepageProps = {
   onNavigate: (screen: Screen) => void;
   userName: string;
+  userAvatar?: string;
   onLogout: () => void | Promise<void>;
 };
 
