@@ -5,7 +5,7 @@ import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { toast } from "sonner";
-import { projectId } from "/utils/supabase/info";
+import { projectId } from "@/utils/supabase/info";
 
 interface CommunityScreenProps {
   onBack: () => void;
