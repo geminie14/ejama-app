@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useState, useEffect } from "react";
 import { WelcomeScreen } from "@/app/components/WelcomeScreen";
 import { AuthDialog } from "@/app/components/AuthDialog";
@@ -25,6 +26,8 @@ export default function App() {
   const [accessToken, setAccessToken] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState<string>("");
+  const [userAvatar, setUserAvatar] = useState("");
+
 
   useEffect(() => {
     checkSession();
@@ -74,10 +77,19 @@ export default function App() {
       const { data: { user } } = await supabase.auth.getUser(token);
       
       if (user) {
-        // Try to get name from user metadata first
-        const name = user.user_metadata?.name || "there";
-        setUserName(name);
-      }
+      const name =
+        user.user_metadata?.name ||
+        user.user_metadata?.full_name ||
+        user.email;
+
+      const avatar =
+        user.user_metadata?.avatar_url ||
+        user.user_metadata?.picture ||
+        "";
+
+      setUserName(name);
+      setUserAvatar(avatar); // 👈 ADD THIS
+    }
     } catch (error) {
       console.error("Error fetching user data:", error);
       setUserName("there");
@@ -93,6 +105,30 @@ export default function App() {
     setUserName("");
     setCurrentScreen("welcome");
   };
+
+  useEffect(() => {
+  const restoreSession = async () => {
+    const supabase = getSupabaseClient();
+
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session) {
+      setAccessToken(session.access_token);
+      setIsAuthenticated(true);
+
+      const name =
+        session.user.user_metadata?.name ||
+        session.user.user_metadata?.full_name ||
+        session.user.email;
+
+      setUserName(name);
+
+      setCurrentScreen("home");
+    }
+  };
+
+  restoreSession();
+}, []);
 
   const handleNavigate = (screen: string) => {
     setCurrentScreen(screen as Screen);
@@ -131,7 +167,7 @@ export default function App() {
       case "feedback":
         return <FeedbackScreen onBack={handleBack} />;
       case "settings":
-        return <SettingsScreen onBack={handleBack} onLogout={handleLogout} accessToken={accessToken} />;
+        return <SettingsScreen onBack={handleBack} onLogout={handleLogout} accessToken={accessToken} userName={userName} userAvatar={userAvatar}/>;
       case "reset-password":
         return (
           <ResetPasswordScreen
