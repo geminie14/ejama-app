@@ -95,6 +95,12 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
   };
 
   const handleGoogleSignIn = async () => {
+    if (!keepSignedIn) {
+    sessionStorage.setItem(TEMP_SESSION_KEY, "1");
+  } else {
+    sessionStorage.removeItem(TEMP_SESSION_KEY);
+  }
+    
     const supabase = getSupabaseClient();
 
     const { error } = await supabase.auth.signInWithOAuth({
