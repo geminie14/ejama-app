@@ -7,7 +7,15 @@ export function getSupabaseClient(): SupabaseClient {
   if (!supabaseInstance) {
     supabaseInstance = createClient(
       `https://${projectId}.supabase.co`,
-      publicAnonKey
+      publicAnonKey,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          storage: localStorage, // important for Vite web apps
+        },
+      }
     );
   }
   return supabaseInstance;
