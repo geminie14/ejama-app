@@ -176,7 +176,7 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
         return <Homepage onNavigate={handleNavigate} userName={userName} onLogout={handleLogout} />;
 
       case "products":
-        return <ProductsScreen onBack={handleBack} onNavigateToLocator={() => setCurrentScreen("locator")} />;
+        return <ProductsScreen onBack={handleBack} onNavigateToLocator={() => handleNavigate("locator")} />;
       case "locator":
         return <ProductLocator onBack={handleBack} />;
       case "education":
