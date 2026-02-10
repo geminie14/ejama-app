@@ -6,7 +6,7 @@ import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Calendar } from "@/app/components/ui/calendar";
 import { toast } from "sonner";
-import { projectId, publicAnonKey } from "/utils/supabase/info";
+import { projectId, publicAnonKey } from "@/utils/supabase/info";
 import type { DateRange } from "react-day-picker";
 
 interface PeriodTrackerProps {
