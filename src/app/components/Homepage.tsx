@@ -93,7 +93,7 @@ function Tile({
   );
 }
 
-export function Homepage({ onNavigate, userName, onLogout }: HomepageProps) {
+export function Homepage({ onNavigate, userName, userAvatar, onLogout }: HomepageProps) {
   return (
     <div className="min-h-screen bg-[#E7DDFF]">
       <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
