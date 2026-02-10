@@ -21,6 +21,7 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,7 +151,16 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
 
 
             {mode === "login" && (
-  <div className="flex justify-end">
+  <div className="flex items-center justify-between">
+    <label className="flex items-center gap-2 text-sm" style={{ color: "#776B7D" }}>
+      <input
+        type="checkbox"
+        checked={keepSignedIn}
+        onChange={(e) => setKeepSignedIn(e.target.checked)}
+      />
+      Keep me signed in
+    </label>
+
     <button
       type="button"
       onClick={onForgotPassword}
@@ -161,6 +171,7 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
     </button>
   </div>
 )}
+
           <Button
             type="submit"
             className="w-full text-white"
