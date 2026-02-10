@@ -13,10 +13,12 @@ export function getSupabaseClient(): SupabaseClient {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
-          storage: localStorage, // important for Vite web apps
+          storage: window.localStorage,
+          storageKey: "ejama-auth",
         },
       }
     );
   }
   return supabaseInstance;
 }
+
