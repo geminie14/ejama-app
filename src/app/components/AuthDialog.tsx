@@ -22,6 +22,8 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(true);
+  const TEMP_SESSION_KEY = "ejama_temp_session";
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,10 +74,17 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
         }
 
         if (data.session?.access_token) {
-          toast.success("Logged in successfully!");
-          onSuccess(data.session.access_token);
-          onClose();
+        if (!keepSignedIn) {
+          sessionStorage.setItem(TEMP_SESSION_KEY, "1");
+        } else {
+          sessionStorage.removeItem(TEMP_SESSION_KEY);
         }
+
+  toast.success("Logged in successfully!");
+  onSuccess(data.session.access_token);
+  onClose();
+}
+
       }
     } catch (error) {
       console.error("Auth error:", error);
