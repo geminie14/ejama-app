@@ -4,7 +4,7 @@ import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { getSupabaseClient } from "@/utils/supabase/client";
-import { projectId, publicAnonKey } from "/utils/supabase/info";
+import { projectId, publicAnonKey } from "@/utils/supabase/info";
 import { toast } from "sonner";
 
 interface AuthDialogProps {
