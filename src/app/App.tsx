@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { WelcomeScreen } from "@/app/components/WelcomeScreen";
 import { AuthDialog } from "@/app/components/AuthDialog";
 import { Homepage } from "@/app/components/Homepage";
