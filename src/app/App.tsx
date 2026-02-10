@@ -192,7 +192,15 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
           />
         );
       case "home":
-        return <Homepage onNavigate={handleNavigate} userName={userName} onLogout={handleLogout} />;
+        return (
+  <Homepage
+    onNavigate={handleNavigate}
+    userName={userName}
+    userAvatar={userAvatar}
+    onLogout={handleLogout}
+  />
+);
+
 
       case "products":
         return <ProductsScreen onBack={handleBack} onNavigateToLocator={() => handleNavigate("locator")} />;
@@ -223,7 +231,14 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
           />
         );
       default:
-        return <Homepage onNavigate={handleNavigate} userName={userName} onLogout={handleLogout} />;
+       return (
+  <Homepage
+    onNavigate={handleNavigate}
+    userName={userName}
+    userAvatar={userAvatar}
+    onLogout={handleLogout}
+  />
+);
 
     }
   };
