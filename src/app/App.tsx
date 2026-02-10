@@ -42,10 +42,25 @@ export default function App() {
         setAccessToken(session.access_token);
         setIsAuthenticated(true);
 
-        const name = session.user?.user_metadata?.name || "there";
-        setUserName(name);
+       const user = session.user;
 
-        setCurrentScreen("home");
+const name =
+  user.user_metadata?.name ||
+  user.user_metadata?.full_name ||
+  user.email ||
+  "there";
+
+const avatar =
+  user.user_metadata?.profile_picture ||
+  user.user_metadata?.avatar_url ||
+  user.user_metadata?.picture ||
+  "";
+
+setUserName(name);
+setUserAvatar(avatar);
+
+setCurrentScreen("home");
+
       }
     } catch (error) {
       console.error("Session check error:", error);
@@ -105,30 +120,7 @@ export default function App() {
     setCurrentScreen("welcome");
   };
 
-  useEffect(() => {
-  const restoreSession = async () => {
-    const supabase = getSupabaseClient();
-
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (session) {
-      setAccessToken(session.access_token);
-      setIsAuthenticated(true);
-
-      const name =
-        session.user.user_metadata?.name ||
-        session.user.user_metadata?.full_name ||
-        session.user.email;
-
-      setUserName(name);
-
-      setCurrentScreen("home");
-    }
-  };
-
-  restoreSession();
-}, []);
-
+  
   const handleNavigate = (screen: string) => {
     setCurrentScreen(screen as Screen);
   };
