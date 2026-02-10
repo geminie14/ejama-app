@@ -148,60 +148,32 @@ export function Homepage({ onNavigate, userName, userAvatar, onLogout }: Homepag
             onClick={() => onNavigate("locator")}
           />
           <Tile
-            variant="secondary"
-            title="Browse Products"
-            subtitle="Explore trusted options"
-            icon={<Package className="w-6 h-6" />}
-            onClick={() => onNavigate("products")}
-          />
+  variant="secondary"
+  title="Learn"
+  subtitle="Guides & resources"
+  icon={<BookOpen className="w-6 h-6" />}
+  onClick={() => onNavigate("education")}
+/>
+
         </div>
 
         {/* Secondary Actions (normal grid) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Tile
-            title="Learn"
-            subtitle="Guides & resources"
-            icon={<BookOpen className="w-6 h-6" />}
-            onClick={() => onNavigate("education")}
-          />
-          <Tile
-            title="Community"
-            subtitle="Connect & share"
-            icon={<Users className="w-6 h-6" />}
-            onClick={() => onNavigate("community")}
-          />
-          <Tile
-            title="Ask an Expert"
-            subtitle="Get answers privately"
-            icon={<HelpCircle className="w-6 h-6" />}
-            onClick={() => onNavigate("ask-expert")}
-          />
-          <Tile
-            title="Track Period"
-            subtitle="Stay on top of your cycle"
-            icon={<Calendar className="w-6 h-6" />}
-            onClick={() => onNavigate("tracker")}
-          />
-          <Tile
-            title="Wellness Tips"
-            subtitle="Healthy habits & support"
-            icon={<Heart className="w-6 h-6" />}
-            onClick={() => onNavigate("health-tips")}
-          />
-          <Tile
-            title="Share Feedback"
-            subtitle="Help us improve"
-            icon={<MessageSquare className="w-6 h-6" />}
-            onClick={() => onNavigate("feedback")}
-          />
-          <Tile
-            title="Settings"
-            subtitle="Account & preferences"
-            icon={<Settings className="w-6 h-6" />}
-            onClick={() => onNavigate("settings")}
-          />
-         
-        </div>
+  <Tile
+    title="Share Feedback"
+    subtitle="Help us improve"
+    icon={<MessageSquare className="w-6 h-6" />}
+    onClick={() => onNavigate("feedback")}
+  />
+
+  <Tile
+    title="Settings"
+    subtitle="Account & preferences"
+    icon={<Settings className="w-6 h-6" />}
+    onClick={() => onNavigate("settings")}
+  />
+</div>
+
 
                 <div className="mt-6 flex justify-center">
           <Button
