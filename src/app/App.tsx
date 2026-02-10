@@ -15,7 +15,7 @@ import { ResetPasswordScreen } from "@/app/components/ResetPasswordScreen";
 import { Toaster } from "@/app/components/ui/sonner";
 import { getSupabaseClient } from "@/utils/supabase/client";
 
-type Screen = "welcome" | "home" | "products" | "locator" | "education" | "community" | "ask-expert" | "tracker" | "health-tips" | "feedback" | "settings" | "reset-password";
+type Screen = "welcome" | "home" | "locator" | "education"  | "feedback" | "settings" | "reset-password";
 type AuthMode = "signup" | "login" | "reset";
 
 export default function App() {
@@ -31,13 +31,8 @@ export default function App() {
 
   const allowedScreens: Screen[] = [
     "home",
-    "products",
     "locator",
     "education",
-    "community",
-    "ask-expert",
-    "tracker",
-    "health-tips",
     "feedback",
     "settings",
   ];
@@ -172,10 +167,15 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
 };
   
     const handleNavigate = (screen: string) => {
-    const next = screen as Screen;
-    setCurrentScreen(next);
-    saveScreen(next);
-  };
+  const next = screen as Screen;
+
+  if (!allowedScreens.includes(next)) {
+      return;
+  }
+
+  setCurrentScreen(next);
+  saveScreen(next);
+};
 
     const handleBack = () => {
     setCurrentScreen("home");
