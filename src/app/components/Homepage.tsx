@@ -41,6 +41,8 @@ function Tile({
   icon,
   onClick,
   variant = "default",
+  disabled = false,
+  badge,
 }: {
   title: string;
   subtitle?: string;
@@ -49,17 +51,23 @@ function Tile({
   variant?: "default" | "primary" | "secondary";
 }) {
   const base =
-    "group w-full text-left rounded-2xl border bg-white shadow-sm transition hover:shadow-md active:scale-[0.99]";
+  "group w-full text-left rounded-2xl border bg-white shadow-sm transition active:scale-[0.99]";
   const primary =
     "border-transparent bg-gradient-to-br from-[#7C3AED] to-[#A592AB] text-white";
   const secondary = "border-[#E7DDFF] bg-white";
+const disabledClass =
+  "opacity-70 cursor-not-allowed hover:shadow-sm";
+const enabledClass =
+  "hover:shadow-md";
 
-  const cardClass =
-    variant === "primary"
-      ? `${base} ${primary}`
-      : variant === "secondary"
-      ? `${base} ${secondary}`
-      : base;
+  const cardClassRaw =
+  variant === "primary"
+    ? `${base} ${primary}`
+    : variant === "secondary"
+    ? `${base} ${secondary}`
+    : base;
+
+const cardClass = `${cardClassRaw} ${disabled ? disabledClass : enabledClass}`;
 
   const titleClass =
     variant === "primary"
@@ -80,14 +88,30 @@ function Tile({
     variant === "primary" ? "text-white" : "text-[#594F62]";
 
   return (
-    <button onClick={onClick} className={cardClass} type="button">
-      <div className="p-5 sm:p-6 flex items-center gap-4">
-        <div className={iconWrap}>
+    return (
+  <button
+    onClick={disabled ? undefined : onClick}
+    className={cardClass}
+    type="button"
+    disabled={disabled}
+  >
+    <div className="p-5 sm:p-6 flex items-center gap-4 justify-between">
+      <div className="flex items-center gap-4">
+
+               <div className={iconWrap}>
           <div className={iconColor}>{icon}</div>
         </div>
         <div className="min-w-0">
           <div className={titleClass}>{title}</div>
           {subtitle ? <div className={subtitleClass}>{subtitle}</div> : null}
+        </div>
+      </div>
+
+      {badge ? (
+        <span className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full bg-[#EDE7FF] text-[#594F62] border border-[#D4C4EC]">
+          {badge}
+        </span>
+      ) : null}
         </div>
       </div>
     </button>
@@ -148,6 +172,15 @@ export function Homepage({ onNavigate, userName, userAvatar, onLogout }: Homepag
             onClick={() => onNavigate("locator")}
           />
           <Tile
+  title="Browse Products"
+  subtitle="Explore trusted options"
+  icon={<Package className="w-6 h-6" />}
+  onClick={() => onNavigate("products")}
+  disabled
+  badge="Coming soon"
+/>
+
+          <Tile
   variant="secondary"
   title="Learn"
   subtitle="Guides & resources"
@@ -172,6 +205,42 @@ export function Homepage({ onNavigate, userName, userAvatar, onLogout }: Homepag
     icon={<Settings className="w-6 h-6" />}
     onClick={() => onNavigate("settings")}
   />
+  <Tile
+  title="Community"
+  subtitle="Connect & share"
+  icon={<Users className="w-6 h-6" />}
+  onClick={() => onNavigate("community")}
+  disabled
+  badge="Coming soon"
+/>
+
+<Tile
+  title="Ask an Expert"
+  subtitle="Get answers privately"
+  icon={<HelpCircle className="w-6 h-6" />}
+  onClick={() => onNavigate("ask-expert")}
+  disabled
+  badge="Coming soon"
+/>
+
+<Tile
+  title="Track Period"
+  subtitle="Stay on top of your cycle"
+  icon={<Calendar className="w-6 h-6" />}
+  onClick={() => onNavigate("tracker")}
+  disabled
+  badge="Coming soon"
+/>
+
+<Tile
+  title="Wellness Tips"
+  subtitle="Healthy habits & support"
+  icon={<Heart className="w-6 h-6" />}
+  onClick={() => onNavigate("health-tips")}
+  disabled
+  badge="Coming soon"
+/>
+        
 </div>
 
 
