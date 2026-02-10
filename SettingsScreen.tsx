@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, User, Bell, Lock, HelpCircle, LogOut, Camera, Upload } from "lucide-react";
+import { ArrowLeft, Bell, Lock, HelpCircle, LogOut, Camera } from "lucide-react";
 import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Switch } from "@/app/components/ui/switch";
@@ -7,7 +7,7 @@ import { Label } from "@/app/components/ui/label";
 import { Input } from "@/app/components/ui/input";
 import { getSupabaseClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
-import { projectId } from "/utils/supabase/info";
+import { projectId } from "@/utils/supabase/info";
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -60,6 +60,16 @@ export function SettingsScreen({ onBack, onLogout, accessToken }: SettingsScreen
 
     setUploading(true);
 
+    const supabase = getSupabaseClient();
+const { data: { session } } = await supabase.auth.getSession();
+
+if (!session?.access_token) {
+  toast.error("No active session. Please log in again.");
+  setUploading(false);
+  return;
+}
+
+
     try {
       // Convert image to base64
       const reader = new FileReader();
@@ -72,7 +82,7 @@ export function SettingsScreen({ onBack, onLogout, accessToken }: SettingsScreen
           {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${session.access_token}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ picture: base64String }),
@@ -85,7 +95,6 @@ export function SettingsScreen({ onBack, onLogout, accessToken }: SettingsScreen
           toast.success("Profile picture updated!");
           
           // Update local user metadata
-          const supabase = getSupabaseClient();
           await supabase.auth.updateUser({
             data: { profile_picture: data.url }
           });
