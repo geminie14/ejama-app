@@ -30,7 +30,7 @@ export function SettingsScreen({ onBack, onLogout, accessToken }: SettingsScreen
   const loadUserData = async () => {
     try {
       const supabase = getSupabaseClient();
-      const { data: { user } } = await supabase.auth.getUser(accessToken);
+      const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
         setUserName(user.user_metadata?.name || "");
