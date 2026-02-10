@@ -1,71 +1,204 @@
+// src/app/components/Homepage.tsx
 import { Card } from "@/app/components/ui/card";
-import { Package, MapPin, BookOpen, Users, Calendar, Heart, MessageSquare, Settings, HelpCircle, LogOut } from "lucide-react";
-import logoImage from "@/assets/ce6a3ec9562f1270d6bfa0cc1141d0e067c0c231.png";
 import { Button } from "@/app/components/ui/button";
+import {
+  Package,
+  MapPin,
+  BookOpen,
+  Users,
+  HelpCircle,
+  Calendar,
+  Heart,
+  MessageSquare,
+  Settings,
+  LogOut,
+} from "lucide-react";
 
-interface HomepageProps {
-  onNavigate: (screen: string) => void;
+type Screen =
+  | "welcome"
+  | "home"
+  | "products"
+  | "locator"
+  | "education"
+  | "community"
+  | "ask-expert"
+  | "tracker"
+  | "health-tips"
+  | "feedback"
+  | "settings"
+  | "reset-password";
+
+type HomepageProps = {
+  onNavigate: (screen: Screen) => void;
   userName: string;
-  onLogout: () => void;
-}
+  onLogout: () => void | Promise<void>;
+};
 
+function Tile({
+  title,
+  subtitle,
+  icon,
+  onClick,
+  variant = "default",
+}: {
+  title: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  variant?: "default" | "primary" | "secondary";
+}) {
+  const base =
+    "group w-full text-left rounded-2xl border bg-white shadow-sm transition hover:shadow-md active:scale-[0.99]";
+  const primary =
+    "border-transparent bg-gradient-to-br from-[#7C3AED] to-[#A592AB] text-white";
+  const secondary = "border-[#E7DDFF] bg-white";
 
-export function Homepage({ onNavigate, userName, onLogout }: HomepageProps) {
-  const menuItems = [
-    { icon: Package, label: "Products", screen: "products", color: "bg-[#BCA4E3] text-[#594F62]" },
-    { icon: MapPin, label: "Product Locator", screen: "locator", color: "bg-[#B9A5E2] text-[#594F62]" },
-    { icon: BookOpen, label: "Education", screen: "education", color: "bg-[#D4C4EC] text-[#594F62]" },
-    { icon: Users, label: "Community", screen: "community", color: "bg-[#D1C1F2] text-[#594F62]" },
-    { icon: HelpCircle, label: "Ask the Expert", screen: "ask-expert", color: "bg-[#C9B8E6] text-[#594F62]" },
-    { icon: Calendar, label: "Period Tracker", screen: "tracker", color: "bg-[#9279BA] text-white" },
-    { icon: Heart, label: "Health Tips", screen: "health-tips", color: "bg-[#B2A0B9] text-white" },
-    { icon: MessageSquare, label: "Feedback", screen: "feedback", color: "bg-[#A592AB] text-white" },
-    { icon: Settings, label: "Settings", screen: "settings", color: "bg-[#745E96] text-white" },
-  ];
+  const cardClass =
+    variant === "primary"
+      ? `${base} ${primary}`
+      : variant === "secondary"
+      ? `${base} ${secondary}`
+      : base;
+
+  const titleClass =
+    variant === "primary"
+      ? "text-lg font-semibold text-white"
+      : "text-base font-semibold text-[#594F62]";
+
+  const subtitleClass =
+    variant === "primary"
+      ? "text-sm text-white/80"
+      : "text-sm text-[#776B7D]";
+
+  const iconWrap =
+    variant === "primary"
+      ? "h-12 w-12 rounded-full bg-white/20 flex items-center justify-center"
+      : "h-12 w-12 rounded-full bg-[#EDE7FF] flex items-center justify-center";
+
+  const iconColor =
+    variant === "primary" ? "text-white" : "text-[#594F62]";
 
   return (
-    <div className="min-h-screen bg-[#E7DDFF] p-4">
-      <div className="max-w-6xl mx-auto">
-        <header className="relative text-center py-8">
-          <div className="absolute right-0 top-0">
-  <Button variant="outline" onClick={onLogout} className="gap-2">
-    <LogOut className="w-4 h-4" />
-    Logout
-  </Button>
-</div>
-          <div className="flex justify-center mb-4">
-            <img src={logoImage} alt="Ejama Logo" className="w-24 h-24" />
-          </div>
-          <h1 className="text-4xl font-bold mb-2" style={{ color: '#594F62' }}>Ejama</h1>
-          <p style={{ color: '#776B7D' }}>Empowering Menstrual Health</p>
-        </header>
-
-        <div className="mb-6">
-  <h2 className="text-lg font-semibold" style={{ color: "#594F62" }}>
-    Hi, {userName} 👋
-  </h2>
-  <p className="text-sm" style={{ color: "#776B7D" }}>
-    What would you like to explore today?
-  </p>
-</div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {menuItems.map((item) => (
-            <Card
-              key={item.screen}
-              className="p-6 cursor-pointer hover:shadow-lg transition-shadow bg-white"
-              onClick={() => onNavigate(item.screen)}
-            >
-              <div className="flex flex-col items-center text-center space-y-3">
-                <div className={`p-4 rounded-full ${item.color}`}>
-                  <item.icon className="w-8 h-8" />
-                </div>
-                <h3 className="font-semibold" style={{ color: '#594F62' }}>{item.label}</h3>
-              </div>
-            </Card>
-          ))}
+    <button onClick={onClick} className={cardClass} type="button">
+      <div className="p-5 sm:p-6 flex items-center gap-4">
+        <div className={iconWrap}>
+          <div className={iconColor}>{icon}</div>
         </div>
+        <div className="min-w-0">
+          <div className={titleClass}>{title}</div>
+          {subtitle ? <div className={subtitleClass}>{subtitle}</div> : null}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+export function Homepage({ onNavigate, userName, onLogout }: HomepageProps) {
+  return (
+    <div className="min-h-screen bg-[#E7DDFF]">
+      <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <div className="text-3xl sm:text-4xl font-bold text-[#594F62]">
+              Ejama
+            </div>
+            <div className="text-sm sm:text-base text-[#776B7D] mt-1">
+              Empowering Menstrual Health
+            </div>
+
+            <div className="mt-4">
+              <div className="text-lg sm:text-xl font-semibold text-[#594F62]">
+                Hi, {userName} <span className="ml-1">👋</span>
+              </div>
+              <div className="text-sm text-[#776B7D]">
+                What would you like to explore today?
+              </div>
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            className="rounded-xl border-[#D4C4EC] bg-white text-[#594F62] hover:bg-[#F6F2FF]"
+            onClick={onLogout}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+
+        {/* Primary Actions (BIG) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <Tile
+            variant="primary"
+            title="Find Products Near You"
+            subtitle="Locate pads, tampons & essentials"
+            icon={<MapPin className="w-6 h-6" />}
+            onClick={() => onNavigate("locator")}
+          />
+          <Tile
+            variant="secondary"
+            title="Browse Products"
+            subtitle="Explore trusted options"
+            icon={<Package className="w-6 h-6" />}
+            onClick={() => onNavigate("products")}
+          />
+        </div>
+
+        {/* Secondary Actions (normal grid) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Tile
+            title="Learn"
+            subtitle="Guides & resources"
+            icon={<BookOpen className="w-6 h-6" />}
+            onClick={() => onNavigate("education")}
+          />
+          <Tile
+            title="Community"
+            subtitle="Connect & share"
+            icon={<Users className="w-6 h-6" />}
+            onClick={() => onNavigate("community")}
+          />
+          <Tile
+            title="Ask an Expert"
+            subtitle="Get answers privately"
+            icon={<HelpCircle className="w-6 h-6" />}
+            onClick={() => onNavigate("ask-expert")}
+          />
+          <Tile
+            title="Track Period"
+            subtitle="Stay on top of your cycle"
+            icon={<Calendar className="w-6 h-6" />}
+            onClick={() => onNavigate("tracker")}
+          />
+          <Tile
+            title="Wellness Tips"
+            subtitle="Healthy habits & support"
+            icon={<Heart className="w-6 h-6" />}
+            onClick={() => onNavigate("health-tips")}
+          />
+          <Tile
+            title="Share Feedback"
+            subtitle="Help us improve"
+            icon={<MessageSquare className="w-6 h-6" />}
+            onClick={() => onNavigate("feedback")}
+          />
+          <Tile
+            title="Settings"
+            subtitle="Account & preferences"
+            icon={<Settings className="w-6 h-6" />}
+            onClick={() => onNavigate("settings")}
+          />
+        </div>
+
+        {/* Footer */}
+        <Card className="mt-6 p-4 rounded-2xl border-[#B2A0B9] bg-[#D4C4EC]">
+          <p className="text-sm text-center text-[#594F62]">
+            Ejama v1.0 • Made with 💜 for women&apos;s health
+          </p>
+        </Card>
       </div>
     </div>
   );
 }
+
