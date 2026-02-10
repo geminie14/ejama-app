@@ -55,6 +55,25 @@ export default function App() {
     checkSession();
   }, []);
 
+ useEffect(() => {
+  const handleBeforeUnload = async () => {
+        if (sessionStorage.getItem("ejama_temp_session") === "1") {
+      const supabase = getSupabaseClient();
+      await supabase.auth.signOut();
+
+      sessionStorage.removeItem("ejama_temp_session");
+      localStorage.removeItem(SCREEN_KEY);
+    }
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+
+  return () => {
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+  };
+}, []);
+   
+
   const checkSession = async () => {
     try {
       const supabase = getSupabaseClient();
