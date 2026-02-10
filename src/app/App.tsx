@@ -19,6 +19,29 @@ type Screen = "welcome" | "home" | "products" | "locator" | "education" | "commu
 type AuthMode = "signup" | "login" | "reset";
 
 export default function App() {
+    const SCREEN_KEY = "ejama_current_screen";
+
+  const saveScreen = (screen: Screen) => {
+    localStorage.setItem(SCREEN_KEY, screen);
+  };
+
+  const loadSavedScreen = (): Screen | null => {
+    return (localStorage.getItem(SCREEN_KEY) as Screen | null);
+  };
+
+  const allowedScreens: Screen[] = [
+    "home",
+    "products",
+    "locator",
+    "education",
+    "community",
+    "ask-expert",
+    "tracker",
+    "health-tips",
+    "feedback",
+    "settings",
+  ];
+
   const [currentScreen, setCurrentScreen] = useState<Screen>("welcome");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("signup");
@@ -59,7 +82,9 @@ const avatar =
 setUserName(name);
 setUserAvatar(avatar);
 
-setCurrentScreen("home");
+const saved = loadSavedScreen();
+setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
+
 
       }
     } catch (error) {
@@ -109,7 +134,8 @@ setCurrentScreen("home");
       setUserName("there");
     }
     
-    setCurrentScreen("home");
+   const saved = loadSavedScreen();
+setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
     setAuthDialogOpen(false);
   };
 
@@ -124,12 +150,15 @@ setCurrentScreen("home");
   setCurrentScreen("welcome");
 };
   
-  const handleNavigate = (screen: string) => {
-    setCurrentScreen(screen as Screen);
+    const handleNavigate = (screen: string) => {
+    const next = screen as Screen;
+    setCurrentScreen(next);
+    saveScreen(next);
   };
 
-  const handleBack = () => {
+    const handleBack = () => {
     setCurrentScreen("home");
+    saveScreen("home");
   };
 
   const renderScreen = () => {
