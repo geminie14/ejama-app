@@ -35,12 +35,13 @@ export function SettingsScreen({ onBack, onLogout, accessToken }: SettingsScreen
       if (user) {
         setUserName(user.user_metadata?.name || "");
         setUserEmail(user.email || "");
-        setProfilePicture(
+       const avatar =
   user.user_metadata?.profile_picture ||
   user.user_metadata?.avatar_url ||
   user.user_metadata?.picture ||
-  ""
-);
+  "";
+
+setProfilePicture(avatar);
 
       }
     } catch (error) {
