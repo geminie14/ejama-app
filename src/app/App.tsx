@@ -113,13 +113,16 @@ setCurrentScreen("home");
     setAuthDialogOpen(false);
   };
 
-  const handleLogout = () => {
-    setAccessToken("");
-    setIsAuthenticated(false);
-    setUserName("");
-    setCurrentScreen("welcome");
-  };
+  const handleLogout = async () => {
+  const supabase = getSupabaseClient();
+  await supabase.auth.signOut();
 
+  setAccessToken("");
+  setIsAuthenticated(false);
+  setUserName("");
+  setUserAvatar("");
+  setCurrentScreen("welcome");
+};
   
   const handleNavigate = (screen: string) => {
     setCurrentScreen(screen as Screen);
