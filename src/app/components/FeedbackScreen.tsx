@@ -19,40 +19,43 @@ export function FeedbackScreen({ onBack }: FeedbackScreenProps) {
   const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!feedbackType || !feedback) {
-      toast.error("Please select a feedback type and enter your feedback");
-      return;
-    }
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    setLoading(true);
-    try {
-     const { error } = await supabase.from("feedback").insert([
-  {
-    name: name || "Anonymous",
-    feedback_type: feedbackType,
-    feedback: feedback,
-  },
-]);
+  if (!feedbackType || !feedback) {
+    toast.error("Please select a feedback type and enter your feedback");
+    return;
+  }
 
-if (!error) {
-  toast.success("Thank you for your feedback!");
-  setName("");
-  setFeedbackType("");
-  setFeedback("");
-} else {
-  console.error("Supabase insert error:", error);
-  toast.error(error.message || "Failed to submit feedback");
-}
-    } catch (error) {
-      console.error("Error submitting feedback (network issue or server not deployed):", error);
-      toast.error("Network error. Please check your connection and try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+
+  try {
+    const supabase = getSupabaseClient();
+
+    const { error } = await supabase
+      .from("feedback")
+      .insert([
+        {
+          name: name || "Anonymous",
+          feedback_type: feedbackType,
+          feedback: feedback,
+        },
+      ]);
+
+    if (error) throw error;
+
+    toast.success("Thank you for your feedback!");
+
+    setName("");
+    setFeedbackType("");
+    setFeedback("");
+  } catch (error: any) {
+    console.error(error);
+    toast.error(error.message || "Failed to submit feedback");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#E7DDFF] p-4">
