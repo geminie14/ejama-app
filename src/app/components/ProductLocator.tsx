@@ -3,6 +3,7 @@ import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface ProductLocatorProps {
   onBack: () => void;
@@ -80,6 +81,33 @@ export function ProductLocator({ onBack }: ProductLocatorProps) {
     setFilteredStores(filtered);
   };
 
+  const handleUseMyLocation = () => {
+  if (!navigator.geolocation) {
+    toast.error("Location is not supported on this device.");
+    return;
+  }
+
+  toast.message("Getting your location...");
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+
+      // For now: just show coords. Later: call Places/Mapbox + live search.
+      toast.success("Location found!");
+      setLocation(`My location (${latitude.toFixed(3)}, ${longitude.toFixed(3)})`);
+
+      // Optional: trigger search immediately
+      // handleSearch();
+    },
+    (err) => {
+      console.error(err);
+      toast.error("Could not access your location. Please enable GPS permission.");
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+};
+
   return (
     <div className="min-h-screen bg-[#E7DDFF] p-4">
       <div className="max-w-4xl mx-auto">
@@ -118,9 +146,14 @@ export function ProductLocator({ onBack }: ProductLocatorProps) {
               <MapPin className="w-5 h-5 mr-2" />
               Search
             </Button>
-            <Button variant="outline" className="h-12 px-6" style={{ borderColor: '#A592AB', color: '#A592AB' }}>
-              <Navigation className="w-5 h-5" />
-            </Button>
+            <Button
+  variant="outline"
+  className="h-12 px-6"
+  style={{ borderColor: "#A592AB", color: "#A592AB" }}
+  onClick={handleUseMyLocation}
+>
+  <Navigation className="w-5 h-5" />
+</Button>
           </div>
         </Card>
 
