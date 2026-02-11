@@ -1,6 +1,7 @@
 // src/app/components/Homepage.tsx
 import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
+import { useMemo } from "react";
 import {
   Package,
   MapPin,
@@ -117,9 +118,20 @@ function Tile({
 
 
 export function Homepage({ onNavigate, userName, userAvatar, onLogout }: HomepageProps) {
+ const firstName = userName?.split(" ")[0] || "there";
+
+const greeting = useMemo(() => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}, []);
+ 
   return (
-    <div className="min-h-screen bg-[#E7DDFF]">
-      <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
+    <div className="min-h-screen bg-[#E7DDFF] relative overflow-hidden">
+  {/* subtle hero gradient */}
+  <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-[#DCCFFF] to-transparent pointer-events-none" />
+      <div className="relative max-w-5xl mx-auto px-4 py-6 sm:py-10">
         {/* Header */}
 <div className="flex items-start justify-between gap-4 mb-8">
 
@@ -141,6 +153,32 @@ export function Homepage({ onNavigate, userName, userAvatar, onLogout }: Homepag
       </div>
       <div className="text-xs text-[#8B8196]">
         What would you like to explore today?
+        <div className="mt-3 flex flex-wrap gap-2">
+  <button
+    type="button"
+    onClick={() => onNavigate("locator")}
+    className="text-xs px-3 py-1 rounded-full bg-white border border-[#D4C4EC] text-[#594F62] hover:bg-[#F6F2FF]"
+  >
+    Product Locator
+  </button>
+
+  <button
+    type="button"
+    onClick={() => onNavigate("education")}
+    className="text-xs px-3 py-1 rounded-full bg-white border border-[#D4C4EC] text-[#594F62] hover:bg-[#F6F2FF]"
+  >
+    Learn
+  </button>
+
+  <button
+    type="button"
+    onClick={() => onNavigate("feedback")}
+    className="text-xs px-3 py-1 rounded-full bg-white border border-[#D4C4EC] text-[#594F62] hover:bg-[#F6F2FF]"
+  >
+    Feedback
+  </button>
+</div>
+
       </div>
     </div>
 
