@@ -121,25 +121,32 @@ export function Homepage({ onNavigate, userName, userAvatar, onLogout }: Homepag
     <div className="min-h-screen bg-[#E7DDFF]">
       <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
-            <div className="text-3xl sm:text-4xl font-bold text-[#594F62]">
-              Ejama
-            </div>
-            <div className="text-sm sm:text-base text-[#776B7D] mt-1">
-              Empowering Menstrual Health
-            </div>
+<div className="flex items-start justify-between gap-4 mb-8">
 
-            <div className="mt-4">
-              <div className="text-lg sm:text-xl font-semibold text-[#594F62]">
-                Hi, {userName?.split(" ")[0] || "there"} <span className="ml-1">👋</span>
-              </div>
-              <div className="text-sm text-[#776B7D]">
-                What would you like to explore today?
-              </div>
-            </div>
-          </div>
-          <button
+  <div>
+
+    {/* Brand */}
+    <div className="text-4xl font-extrabold tracking-tight text-[#4B3F72]">
+      Ejama
+    </div>
+
+    <div className="text-sm text-[#8B8196] mt-1">
+      Empowering Menstrual Health
+    </div>
+
+    {/* Greeting Card */}
+    <div className="mt-5 rounded-2xl bg-white/60 backdrop-blur-sm px-4 py-3 shadow-sm border border-[#E7DDFF]">
+      <div className="text-base font-semibold text-[#594F62]">
+        Hi, {userName?.split(" ")[0]} 👋
+      </div>
+      <div className="text-xs text-[#8B8196]">
+        What would you like to explore today?
+      </div>
+    </div>
+
+  </div>
+
+            <button
             type="button"
             onClick={() => onNavigate("settings")}
             className="h-11 w-11 rounded-full overflow-hidden border border-[#D4C4EC] bg-white flex items-center justify-center shadow-sm hover:shadow-md transition"
