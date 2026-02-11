@@ -118,7 +118,7 @@ function Tile({
 
 
 export function Homepage({ onNavigate, userName, userAvatar, onLogout }: HomepageProps) {
- const firstName = firstName| "there";
+ const firstName = userName?.split(" ")[0] || "there";
 
 const greeting = useMemo(() => {
   const hour = new Date().getHours();
