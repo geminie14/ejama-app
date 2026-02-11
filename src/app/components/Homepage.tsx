@@ -1,7 +1,7 @@
 // src/app/components/Homepage.tsx
 import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import {
   Package,
   MapPin,
@@ -120,11 +120,22 @@ function Tile({
 export function Homepage({ onNavigate, userName, userAvatar, onLogout }: HomepageProps) {
  const firstName = userName?.split(" ")[0] || "there";
 
-const greeting = useMemo(() => {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+const [greeting, setGreeting] = useState("");
+
+useEffect(() => {
+  const updateGreeting = () => {
+    const hour = new Date().getHours();
+
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 18) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+  };
+
+  updateGreeting(); // run immediately
+
+  const interval = setInterval(updateGreeting, 60000); // update every minute
+
+  return () => clearInterval(interval);
 }, []);
  
   return (
