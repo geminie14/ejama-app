@@ -1,25 +1,25 @@
-import { useState } from "react";
+"use client";
+
+import { useState, type FormEvent } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Textarea } from "@/app/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/ui/select";
 import { toast } from "sonner";
 import { getSupabaseClient } from "@/utils/supabase/client";
 
-interface FeedbackScreenProps {
-  onBack: () => void;
-}
+...
 
-export function FeedbackScreen({ onBack }: FeedbackScreenProps) {
-  const [name, setName] = useState("");
-  const [feedbackType, setFeedbackType] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [loading, setLoading] = useState(false);
-
- const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: FormEvent) => {
   e.preventDefault();
 
   if (!feedbackType || !feedback) {
@@ -32,20 +32,17 @@ export function FeedbackScreen({ onBack }: FeedbackScreenProps) {
   try {
     const supabase = getSupabaseClient();
 
-    const { error } = await supabase
-      .from("feedback")
-      .insert([
-        {
-          name: name || "Anonymous",
-          feedback_type: feedbackType,
-          feedback: feedback,
-        },
-      ]);
+    const { error } = await supabase.from("feedback").insert([
+      {
+        name: name || "Anonymous",
+        feedback_type: feedbackType,
+        feedback,
+      },
+    ]);
 
     if (error) throw error;
 
     toast.success("Thank you for your feedback!");
-
     setName("");
     setFeedbackType("");
     setFeedback("");
