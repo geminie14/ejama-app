@@ -29,31 +29,23 @@ export function FeedbackScreen({ onBack }: FeedbackScreenProps) {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/feedback`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify({
-            name: name || "Anonymous",
-            feedbackType,
-            feedback,
-          }),
-        }
-      );
+     const { error } = await supabase.from("feedback").insert([
+  {
+    name: name || "Anonymous",
+    feedback_type: feedbackType,
+    feedback: feedback,
+  },
+]);
 
-      if (response.ok) {
-        toast.success("Thank you for your feedback!");
-        setName("");
-        setFeedbackType("");
-        setFeedback("");
-      } else {
-        const error = await response.json();
-        toast.error(error.error || "Failed to submit feedback");
-      }
+if (!error) {
+  toast.success("Thank you for your feedback!");
+  setName("");
+  setFeedbackType("");
+  setFeedback("");
+} else {
+  console.error("Supabase insert error:", error);
+  toast.error(error.message || "Failed to submit feedback");
+}
     } catch (error) {
       console.error("Error submitting feedback (network issue or server not deployed):", error);
       toast.error("Network error. Please check your connection and try again.");
