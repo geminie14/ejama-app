@@ -190,19 +190,7 @@ export function Homepage({ onNavigate, userName, userAvatar, onLogout }: Homepag
 
         {/* Secondary Actions (normal grid) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  <Tile
-    title="Share Feedback"
-    subtitle="Help us improve"
-    icon={<MessageSquare className="w-6 h-6" />}
-    onClick={() => onNavigate("feedback")}
-  />
-
-  <Tile
-    title="Settings"
-    subtitle="Account & preferences"
-    icon={<Settings className="w-6 h-6" />}
-    onClick={() => onNavigate("settings")}
-  />
+ 
   <Tile
   title="Community"
   subtitle="Connect & share"
@@ -238,7 +226,20 @@ export function Homepage({ onNavigate, userName, userAvatar, onLogout }: Homepag
   disabled
   badge="Coming soon"
 />
-        
+
+           <Tile
+    title="Share Feedback"
+    subtitle="Help us improve"
+    icon={<MessageSquare className="w-6 h-6" />}
+    onClick={() => onNavigate("feedback")}
+  />
+
+  <Tile
+    title="Settings"
+    subtitle="Account & preferences"
+    icon={<Settings className="w-6 h-6" />}
+    onClick={() => onNavigate("settings")}
+  />
 </div>
 
 
