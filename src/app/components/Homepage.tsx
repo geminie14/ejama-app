@@ -49,25 +49,27 @@ function Tile({
   icon: React.ReactNode;
   onClick: () => void;
   variant?: "default" | "primary" | "secondary";
+  disabled?: boolean;
+  badge?: string;
 }) {
   const base =
-  "group w-full text-left rounded-2xl border bg-white shadow-sm transition active:scale-[0.99]";
+    "group w-full text-left rounded-2xl border bg-white shadow-sm transition active:scale-[0.99]";
+
   const primary =
     "border-transparent bg-gradient-to-br from-[#7C3AED] to-[#A592AB] text-white";
   const secondary = "border-[#E7DDFF] bg-white";
-const disabledClass =
-  "opacity-70 cursor-not-allowed hover:shadow-sm";
-const enabledClass =
-  "hover:shadow-md";
+
+  const disabledClass = "opacity-70 cursor-not-allowed hover:shadow-sm";
+  const enabledClass = "hover:shadow-md";
 
   const cardClassRaw =
-  variant === "primary"
-    ? `${base} ${primary}`
-    : variant === "secondary"
-    ? `${base} ${secondary}`
-    : base;
+    variant === "primary"
+      ? `${base} ${primary}`
+      : variant === "secondary"
+      ? `${base} ${secondary}`
+      : base;
 
-const cardClass = `${cardClassRaw} ${disabled ? disabledClass : enabledClass}`;
+  const cardClass = `${cardClassRaw} ${disabled ? disabledClass : enabledClass}`;
 
   const titleClass =
     variant === "primary"
@@ -75,48 +77,44 @@ const cardClass = `${cardClassRaw} ${disabled ? disabledClass : enabledClass}`;
       : "text-base font-semibold text-[#594F62]";
 
   const subtitleClass =
-    variant === "primary"
-      ? "text-sm text-white/80"
-      : "text-sm text-[#776B7D]";
+    variant === "primary" ? "text-sm text-white/80" : "text-sm text-[#776B7D]";
 
   const iconWrap =
     variant === "primary"
       ? "h-12 w-12 rounded-full bg-white/20 flex items-center justify-center"
       : "h-12 w-12 rounded-full bg-[#EDE7FF] flex items-center justify-center";
 
-  const iconColor =
-    variant === "primary" ? "text-white" : "text-[#594F62]";
+  const iconColor = variant === "primary" ? "text-white" : "text-[#594F62]";
 
   return (
-    return (
-  <button
-    onClick={disabled ? undefined : onClick}
-    className={cardClass}
-    type="button"
-    disabled={disabled}
-  >
-    <div className="p-5 sm:p-6 flex items-center gap-4 justify-between">
-      <div className="flex items-center gap-4">
+    <button
+      onClick={disabled ? undefined : onClick}
+      className={cardClass}
+      type="button"
+      disabled={disabled}
+    >
+      <div className="p-5 sm:p-6 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className={iconWrap}>
+            <div className={iconColor}>{icon}</div>
+          </div>
 
-               <div className={iconWrap}>
-          <div className={iconColor}>{icon}</div>
+          <div className="min-w-0">
+            <div className={titleClass}>{title}</div>
+            {subtitle ? <div className={subtitleClass}>{subtitle}</div> : null}
+          </div>
         </div>
-        <div className="min-w-0">
-          <div className={titleClass}>{title}</div>
-          {subtitle ? <div className={subtitleClass}>{subtitle}</div> : null}
-        </div>
-      </div>
 
-      {badge ? (
-        <span className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full bg-[#EDE7FF] text-[#594F62] border border-[#D4C4EC]">
-          {badge}
-        </span>
-      ) : null}
-        </div>
+        {badge ? (
+          <span className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full bg-[#EDE7FF] text-[#594F62] border border-[#D4C4EC]">
+            {badge}
+          </span>
+        ) : null}
       </div>
     </button>
   );
 }
+
 
 export function Homepage({ onNavigate, userName, userAvatar, onLogout }: HomepageProps) {
   return (
