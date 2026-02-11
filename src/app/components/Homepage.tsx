@@ -118,7 +118,7 @@ function Tile({
 
 
 export function Homepage({ onNavigate, userName, userAvatar, onLogout }: HomepageProps) {
- const firstName = userName?.split(" ")[0] || "there";
+ const firstName = firstName| "there";
 
 const greeting = useMemo(() => {
   const hour = new Date().getHours();
@@ -149,8 +149,8 @@ const greeting = useMemo(() => {
     {/* Greeting Card */}
     <div className="mt-5 rounded-2xl bg-white/60 backdrop-blur-sm px-4 py-3 shadow-sm border border-[#E7DDFF]">
       <div className="text-base font-semibold text-[#594F62]">
-        Hi, {userName?.split(" ")[0]} 👋
-      </div>
+  {greeting}, {firstName} 👋
+</div>
       <div className="text-xs text-[#8B8196]">
         What would you like to explore today?
         <div className="mt-3 flex flex-wrap gap-2">
