@@ -1,10 +1,18 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/app/components/ui/dialog";
+"use client";
+
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/app/components/ui/dialog";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { getSupabaseClient } from "@/utils/supabase/client";
-import { projectId, publicAnonKey } from "@/utils/supabase/info";
+import { supabaseUrl, supabaseAnonKey } from "@/utils/supabase/info";
 import { toast } from "sonner";
 
 interface AuthDialogProps {
@@ -12,40 +20,63 @@ interface AuthDialogProps {
   onClose: () => void;
   mode: "signup" | "login";
   onSuccess: (accessToken: string) => void;
-  onForgotPassword: () => void; // ✅ add this
+  onForgotPassword: () => void;
 }
 
-
-export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }: AuthDialogProps) {
+export function AuthDialog({
+  open,
+  onClose,
+  mode,
+  onSuccess,
+  onForgotPassword,
+}: AuthDialogProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(true);
+
   const TEMP_SESSION_KEY = "ejama_temp_session";
 
+  const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!hasSupabaseConfig) {
+      toast.error(
+        "Supabase config is missing. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (mode === "signup") {
+        // Call your Supabase Edge Function for signup
+        // NOTE: Your original URL included: /functions/v1/make-server-1aee76a8/signup
+        // Keep it the same, just base it on supabaseUrl.
+        const endpoint = `${supabaseUrl}/functions/v1/make-server-1aee76a8/signup`;
+
         try {
-          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/signup`, {
+          const response = await fetch(endpoint, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${publicAnonKey}`,
+              Authorization: `Bearer ${supabaseAnonKey}`,
             },
-            body: JSON.stringify({ email, password, name }),
+            body: JSON.stringify({
+              email: email.trim(),
+              password,
+              name: name.trim(),
+            }),
           });
 
-          const data = await response.json();
+          const data = await response.json().catch(() => ({}));
 
           if (!response.ok) {
-            toast.error(data.error || "Signup failed");
-            setLoading(false);
+            toast.error(data?.error || "Signup failed");
             return;
           }
 
@@ -55,36 +86,38 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
           setName("");
         } catch (fetchError) {
           console.error("Signup network error:", fetchError);
-          toast.error("Network error. Please check your connection and try again.");
-          setLoading(false);
+          toast.error(
+            "Network error. Please check your connection and try again."
+          );
           return;
         }
       } else {
+        // Login
         const supabase = getSupabaseClient();
 
         const { data, error } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
 
         if (error) {
           toast.error(error.message);
-          setLoading(false);
           return;
         }
 
         if (data.session?.access_token) {
-        if (!keepSignedIn) {
-          sessionStorage.setItem(TEMP_SESSION_KEY, "1");
+          if (!keepSignedIn) {
+            sessionStorage.setItem(TEMP_SESSION_KEY, "1");
+          } else {
+            sessionStorage.removeItem(TEMP_SESSION_KEY);
+          }
+
+          toast.success("Logged in successfully!");
+          onSuccess(data.session.access_token);
+          onClose();
         } else {
-          sessionStorage.removeItem(TEMP_SESSION_KEY);
+          toast.error("Login failed: no session returned.");
         }
-
-  toast.success("Logged in successfully!");
-  onSuccess(data.session.access_token);
-  onClose();
-}
-
       }
     } catch (error) {
       console.error("Auth error:", error);
@@ -95,16 +128,25 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
   };
 
   const handleGoogleSignIn = async () => {
+    if (!hasSupabaseConfig) {
+      toast.error(
+        "Supabase config is missing. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+      );
+      return;
+    }
+
     if (!keepSignedIn) {
-    sessionStorage.setItem(TEMP_SESSION_KEY, "1");
-  } else {
-    sessionStorage.removeItem(TEMP_SESSION_KEY);
-  }
-    
+      sessionStorage.setItem(TEMP_SESSION_KEY, "1");
+    } else {
+      sessionStorage.removeItem(TEMP_SESSION_KEY);
+    }
+
     const supabase = getSupabaseClient();
 
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
+      // Optional: You can add redirectTo if you have a callback route
+      // options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
 
     if (error) {
@@ -116,12 +158,12 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-2xl" style={{ color: '#594F62' }}>
+          <DialogTitle className="text-2xl" style={{ color: "#594F62" }}>
             {mode === "signup" ? "Create Account" : "Welcome Back"}
           </DialogTitle>
           <DialogDescription>
-            {mode === "signup" 
-              ? "Sign up to access Ejama's menstrual health resources and community." 
+            {mode === "signup"
+              ? "Sign up to access Ejama's menstrual health resources and community."
               : "Log in to your Ejama account to continue."}
           </DialogDescription>
         </DialogHeader>
@@ -164,36 +206,42 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
             />
           </div>
 
+          {mode === "login" && (
+            <div className="flex items-center justify-between">
+              <label
+                className="flex items-center gap-2 text-sm"
+                style={{ color: "#776B7D" }}
+              >
+                <input
+                  type="checkbox"
+                  checked={keepSignedIn}
+                  onChange={(e) => setKeepSignedIn(e.target.checked)}
+                />
+                Keep me signed in
+              </label>
 
-            {mode === "login" && (
-  <div className="flex items-center justify-between">
-    <label className="flex items-center gap-2 text-sm" style={{ color: "#776B7D" }}>
-      <input
-        type="checkbox"
-        checked={keepSignedIn}
-        onChange={(e) => setKeepSignedIn(e.target.checked)}
-      />
-      Keep me signed in
-    </label>
-
-    <button
-      type="button"
-      onClick={onForgotPassword}
-      className="text-sm font-semibold hover:underline"
-      style={{ color: "#A592AB" }}
-    >
-      Forgot password?
-    </button>
-  </div>
-)}
+              <button
+                type="button"
+                onClick={onForgotPassword}
+                className="text-sm font-semibold hover:underline"
+                style={{ color: "#A592AB" }}
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
 
           <Button
             type="submit"
             className="w-full text-white"
-            style={{ backgroundColor: '#A592AB' }}
+            style={{ backgroundColor: "#A592AB" }}
             disabled={loading}
           >
-            {loading ? "Processing..." : mode === "signup" ? "Sign Up" : "Login"}
+            {loading
+              ? "Processing..."
+              : mode === "signup"
+              ? "Sign Up"
+              : "Login"}
           </Button>
 
           <div className="relative">
@@ -201,7 +249,9 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-white px-2 text-muted-foreground">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -210,7 +260,7 @@ export function AuthDialog({ open, onClose, mode, onSuccess, onForgotPassword }:
             variant="outline"
             className="w-full"
             onClick={handleGoogleSignIn}
-            style={{ borderColor: '#A592AB', color: '#594F62' }}
+            style={{ borderColor: "#A592AB", color: "#594F62" }}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
