@@ -82,8 +82,8 @@ export function FeedbackScreen({ onBack }: FeedbackScreenProps) {
             Feedback
           </h1>
           <p style={{ color: "#776B7D" }}>
-            We value your feedback. Help us improve Ejama by sharing your
-            thoughts and suggestions.
+            We value your feedback. Help us improve Ejama by sharing your thoughts
+            and suggestions.
           </p>
         </div>
 
@@ -144,17 +144,12 @@ export function FeedbackScreen({ onBack }: FeedbackScreenProps) {
           className="mt-6 p-6 border"
           style={{ backgroundColor: "#D4C4EC", borderColor: "#B2A0B9" }}
         >
-          <h3
-            className="text-lg font-semibold mb-2"
-            style={{ color: "#594F62" }}
-          >
+          <h3 className="text-lg font-semibold mb-2" style={{ color: "#594F62" }}>
             Thank You!
           </h3>
           <p className="text-sm" style={{ color: "#594F62" }}>
-            Your feedback helps us improve Ejama and better serve the menstrual
-            health needs of women and girls across sub-Saharan Africa. We review
-            all feedback carefully and use it to guide our development
-            priorities.
+            Your feedback helps us improve Ejama and better serve the menstrual health
+            needs of women and girls across sub-Saharan Africa.
           </p>
         </Card>
       </div>
