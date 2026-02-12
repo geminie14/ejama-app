@@ -7,7 +7,7 @@ import { Label } from "@/app/components/ui/label";
 import { Input } from "@/app/components/ui/input";
 import { getSupabaseClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
-import { projectId } from "@/utils/supabase/info";
+import { supabaseUrl } from "@/utils/supabase/info";
 
 interface SettingsScreenProps {
   onBack: () => void;
