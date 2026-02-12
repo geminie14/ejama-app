@@ -4,7 +4,7 @@ import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { toast } from "sonner";
-import { projectId } from "@/utils/supabase/info";
+import { supabaseUrl } from "@/utils/supabase/info";
 
 interface HealthTipsScreenProps {
   onBack: () => void;
