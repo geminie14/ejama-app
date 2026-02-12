@@ -17,40 +17,50 @@ import {
 import { toast } from "sonner";
 import { getSupabaseClient } from "@/utils/supabase/client";
 
-const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
+interface FeedbackScreenProps {
+  onBack: () => void;
+}
 
-  if (!feedbackType || !feedback) {
-    toast.error("Please select a feedback type and enter your feedback");
-    return;
-  }
+export function FeedbackScreen({ onBack }: FeedbackScreenProps) {
+  const [name, setName] = useState("");
+  const [feedbackType, setFeedbackType] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  setLoading(true);
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  try {
-    const supabase = getSupabaseClient();
+    if (!feedbackType || !feedback.trim()) {
+      toast.error("Please select a feedback type and enter your feedback");
+      return;
+    }
 
-    const { error } = await supabase.from("feedback").insert([
-      {
-        name: name || "Anonymous",
-        feedback_type: feedbackType,
-        feedback,
-      },
-    ]);
+    setLoading(true);
 
-    if (error) throw error;
+    try {
+      const supabase = getSupabaseClient();
 
-    toast.success("Thank you for your feedback!");
-    setName("");
-    setFeedbackType("");
-    setFeedback("");
-  } catch (error: any) {
-    console.error(error);
-    toast.error(error.message || "Failed to submit feedback");
-  } finally {
-    setLoading(false);
-  }
-};
+      const { error } = await supabase.from("feedback").insert([
+        {
+          name: name.trim() || "Anonymous",
+          feedback_type: feedbackType,
+          feedback: feedback.trim(),
+        },
+      ]);
+
+      if (error) throw error;
+
+      toast.success("Thank you for your feedback!");
+      setName("");
+      setFeedbackType("");
+      setFeedback("");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || "Failed to submit feedback");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#E7DDFF] p-4">
@@ -59,7 +69,7 @@ const handleSubmit = async (e: FormEvent) => {
           <Button
             variant="ghost"
             onClick={onBack}
-            style={{ color: '#A592AB' }}
+            style={{ color: "#A592AB" }}
             className="hover:bg-[#D4C4EC]"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -68,8 +78,13 @@ const handleSubmit = async (e: FormEvent) => {
         </div>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: '#594F62' }}>Feedback</h1>
-          <p style={{ color: '#776B7D' }}>We value your feedback. Help us improve Ejama by sharing your thoughts and suggestions.</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: "#594F62" }}>
+            Feedback
+          </h1>
+          <p style={{ color: "#776B7D" }}>
+            We value your feedback. Help us improve Ejama by sharing your
+            thoughts and suggestions.
+          </p>
         </div>
 
         <Card className="p-6 bg-white">
@@ -93,7 +108,9 @@ const handleSubmit = async (e: FormEvent) => {
                 <SelectContent>
                   <SelectItem value="app-experience">App Experience</SelectItem>
                   <SelectItem value="products">Products</SelectItem>
-                  <SelectItem value="educational-content">Educational Content</SelectItem>
+                  <SelectItem value="educational-content">
+                    Educational Content
+                  </SelectItem>
                   <SelectItem value="suggestion">Suggestion</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
@@ -116,17 +133,28 @@ const handleSubmit = async (e: FormEvent) => {
               type="submit"
               disabled={loading}
               className="w-full text-white"
-              style={{ backgroundColor: '#A592AB' }}
+              style={{ backgroundColor: "#A592AB" }}
             >
               {loading ? "Submitting..." : "Submit Feedback"}
             </Button>
           </form>
         </Card>
 
-        <Card className="mt-6 p-6 border" style={{ backgroundColor: '#D4C4EC', borderColor: '#B2A0B9' }}>
-          <h3 className="text-lg font-semibold mb-2" style={{ color: '#594F62' }}>Thank You!</h3>
-          <p className="text-sm" style={{ color: '#594F62' }}>
-            Your feedback helps us improve Ejama and better serve the menstrual health needs of women and girls across sub-Saharan Africa. We review all feedback carefully and use it to guide our development priorities.
+        <Card
+          className="mt-6 p-6 border"
+          style={{ backgroundColor: "#D4C4EC", borderColor: "#B2A0B9" }}
+        >
+          <h3
+            className="text-lg font-semibold mb-2"
+            style={{ color: "#594F62" }}
+          >
+            Thank You!
+          </h3>
+          <p className="text-sm" style={{ color: "#594F62" }}>
+            Your feedback helps us improve Ejama and better serve the menstrual
+            health needs of women and girls across sub-Saharan Africa. We review
+            all feedback carefully and use it to guide our development
+            priorities.
           </p>
         </Card>
       </div>
