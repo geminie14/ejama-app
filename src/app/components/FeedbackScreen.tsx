@@ -17,8 +17,6 @@ import {
 import { toast } from "sonner";
 import { getSupabaseClient } from "@/utils/supabase/client";
 
-...
-
 const handleSubmit = async (e: FormEvent) => {
   e.preventDefault();
 
