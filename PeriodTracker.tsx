@@ -31,9 +31,9 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
 
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+  Authorization: `Bearer ${accessToken}`,
+  apikey: publicAnonKey,
+}
       );
 
       if (response.ok) {
@@ -80,23 +80,17 @@ const getDatesInRange = (from?: Date, to?: Date) => {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/period-tracking`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-           selectedDates: range?.from && range?.to
-  ? [range.from.toISOString(), range.to.toISOString()]
-  : [],
-
-            cycleLength,
-            periodLength,
-          }),
-        }
-      );
+  `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/period-tracking`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,  
+      apikey: publicAnonKey,                   
+    },
+    body: JSON.stringify({ selectedDates, cycleLength, periodLength }),
+  }
+);
 
       if (response.ok) {
         toast.success("Tracking data saved successfully!");
