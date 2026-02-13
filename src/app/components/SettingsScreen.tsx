@@ -332,6 +332,28 @@ setProfilePicture(avatar);
             </div>
           </Card>
 
+          {userEmail === "geminie14@gmail.com" && (
+  <Card className="p-6 bg-white">
+    <button
+      onClick={() => onNavigate?.("admin-questions")}
+      className="flex items-center space-x-4 w-full text-left hover:opacity-80 transition-opacity"
+    >
+      <div className="p-3 rounded-full bg-[#EDE7FF]">
+        <Lock className="w-6 h-6 text-[#594F62]" />
+      </div>
+
+      <div className="flex-1">
+        <h3 className="font-semibold" style={{ color: "#594F62" }}>
+          Admin Questions
+        </h3>
+        <p className="text-sm" style={{ color: "#776B7D" }}>
+          Review anonymous questions
+        </p>
+      </div>
+    </button>
+  </Card>
+)}
+
           <Card className="p-6 bg-white">
             <button
               onClick={handleLogout}
