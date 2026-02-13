@@ -20,6 +20,7 @@ import { projectId } from "@/utils/supabase/info";
 interface CommunityScreenProps {
   onBack: () => void;
   accessToken: string;
+  initialQaMode?: "home" | "ask" | "browse";
 }
 
 type ForumCategory = {
@@ -92,7 +93,7 @@ const [newCommunityTitle, setNewCommunityTitle] = useState("");
 const [newCommunityDescription, setNewCommunityDescription] = useState("");
 const [newCommunityIcon, setNewCommunityIcon] = useState("💬");
 // Q&A mode inside Community
-const [qaMode, setQaMode] = useState<"home" | "ask" | "browse">("home");
+const [qaMode, setQaMode] = useState<"home" | "ask" | "browse">(initialQaMode ?? "home");
 
 // Ask form
 const [qaCategory, setQaCategory] = useState("general");
