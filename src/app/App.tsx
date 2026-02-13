@@ -202,7 +202,13 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
     onLogout={handleLogout}
   />
 );
-
+    case "ask-question":
+  return (
+    <AskQuestionScreen
+      onBack={handleBack}
+      accessToken={accessToken}
+    />
+  );
 
       case "products":
         return <ProductsScreen onBack={handleBack} onNavigateToLocator={() => handleNavigate("locator")} />;
