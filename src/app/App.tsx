@@ -15,7 +15,7 @@ import { ResetPasswordScreen } from "@/app/components/ResetPasswordScreen";
 import { Toaster } from "@/app/components/ui/sonner";
 import { getSupabaseClient } from "@/utils/supabase/client";
 
-type Screen = "welcome" | "home" | "locator" | "education"  | "feedback" | "settings" | "reset-password";
+type Screen = "welcome" | "home" | "locator" | "education"  | "feedback" | "settings" | "reset-password" | "tracker" | "ask-question;
 type AuthMode = "signup" | "login" | "reset";
 
 export default function App() {
@@ -35,6 +35,8 @@ export default function App() {
     "education",
     "feedback",
     "settings",
+    "tracker",
+    "ask-question",
   ];
 
   const [currentScreen, setCurrentScreen] = useState<Screen>("welcome");
