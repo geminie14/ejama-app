@@ -232,7 +232,17 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
       case "feedback":
         return <FeedbackScreen onBack={handleBack} />;
       case "settings":
-        return <SettingsScreen onBack={handleBack} onLogout={handleLogout} accessToken={accessToken} userName={userName} userAvatar={userAvatar}/>;
+  return (
+    <SettingsScreen
+      onBack={handleBack}
+      onLogout={handleLogout}
+      accessToken={accessToken}
+      userName={userName}
+      userAvatar={userAvatar}
+      userEmail={userEmail}
+      onNavigate={handleNavigate}
+    />
+  );
       case "admin-questions":
   return <AdminQuestionsScreen onBack={handleBack} accessToken={accessToken} />;
     case "reset-password":
