@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { ArrowLeft, ChevronRight, Heart, MessageCirclePlus, Plus, Users, UserPlus, UserMinus } from "lucide-react";
+import { ArrowLeft, ChevronRight, Heart, MessageCirclePlus, Plus, HelpCircle, BookOpenText } from "lucide-react";
 import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -81,6 +81,7 @@ const [creatingCommunity, setCreatingCommunity] = useState(false);
 const [newCommunityTitle, setNewCommunityTitle] = useState("");
 const [newCommunityDescription, setNewCommunityDescription] = useState("");
 const [newCommunityIcon, setNewCommunityIcon] = useState("💬");
+const [qaMode, setQaMode] = useState<"home" | "ask" | "browse">("home");
 
   // ✅ Threads (seed data)
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -325,8 +326,35 @@ const createCommunity = async () => {
           </div>
         </div>
 
+        <Card className="p-4 bg-white">
+  <h3 className="font-semibold" style={{ color: "#594F62" }}>Community</h3>
+  <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+    Ask anonymously, learn from answers, and connect with others.
+  </p>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+    <Button
+      className="w-full text-white justify-start"
+      style={{ backgroundColor: "#A592AB" }}
+      onClick={() => setQaMode("ask")}
+    >
+      <HelpCircle className="w-4 h-4 mr-2" />
+      Ask a Question (Anonymous)
+    </Button>
+
+    <Button
+      variant="outline"
+      className="w-full justify-start"
+      onClick={() => setQaMode("browse")}
+    >
+      <BookOpenText className="w-4 h-4 mr-2" />
+      Browse Answered Questions
+    </Button>
+  </div>
+</Card>
+
        {/* VIEW 1: Categories */}
-{!selectedCategoryId && !selectedThreadId && (
+{!selectedCategoryId && !selectedThreadId && qaMode === "home" && (
   <div className="space-y-4">
     {/* Create community button */}
     {!creatingCommunity && (
@@ -563,7 +591,7 @@ const createCommunity = async () => {
             ))}
 
             {/* Add post */}
-            {isMember(selectedCategoryId) ? (
+            {threadCategoryId && isMember(threadCategoryId) ? (
             <Card className="p-4 bg-white space-y-3">
               <p className="text-sm font-semibold" style={{ color: "#594F62" }}>
                 Add a reply
