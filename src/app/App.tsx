@@ -5,6 +5,7 @@ import { Homepage } from "@/app/components/Homepage";
 import { ProductsScreen } from "@/app/components/ProductsScreen";
 import { ProductLocator } from "@/app/components/ProductLocator";
 import { EducationScreen } from "@/app/components/EducationScreen";
+import { AskQuestionScreen } from "@/app/components/AskQuestionScreen";
 import { CommunityScreen } from "@/app/components/CommunityScreen";
 import { AskExpertScreen } from "@/app/components/AskExpertScreen";
 import { PeriodTracker } from "@/app/components/PeriodTracker";
