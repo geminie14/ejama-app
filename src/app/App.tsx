@@ -17,8 +17,7 @@ import { Toaster } from "@/app/components/ui/sonner";
 import { AdminQuestionsScreen } from "@/app/components/AdminQuestionsScreen";
 import { getSupabaseClient } from "@/utils/supabase/client";
 
-type Screen = "welcome" | "home" | "locator" | "education"  | "feedback" | "settings" | "reset-password" | "tracker" | "ask-question" | "admin-questions"
-;
+type Screen = "welcome" | "home" | "locator" | "products" | "education"  | "feedback" | "settings" | "reset-password" | "tracker" | "ask-question" | "admin-questions";
 type AuthMode = "signup" | "login" | "reset";
 
 export default function App() {
@@ -35,6 +34,7 @@ export default function App() {
   const allowedScreens: Screen[] = [
     "home",
     "locator",
+    "products",
     "education",
     "feedback",
     "settings",
