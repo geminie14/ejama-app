@@ -51,6 +51,7 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState<string>("");
   const [userAvatar, setUserAvatar] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
 
   useEffect(() => {
@@ -87,6 +88,7 @@ export default function App() {
         setIsAuthenticated(true);
 
        const user = session.user;
+          setUserEmail(user.email || "");
 
 const name =
   user.user_metadata?.name ||
@@ -131,6 +133,7 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
   const handleAuthSuccess = async (token: string) => {
     setAccessToken(token);
     setIsAuthenticated(true);
+    setUserEmail(user.email || "");
     
     try {
       const supabase = getSupabaseClient();
