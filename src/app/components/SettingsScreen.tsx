@@ -23,8 +23,8 @@ interface SettingsScreenProps {
 
 export function SettingsScreen({ onBack, onLogout, accessToken, userName, userAvatar, userEmail, onNavigate, }: SettingsScreenProps) {
   const [profilePicture, setProfilePicture] = useState<string>("");
-  const [userName, setUserName] = useState<string>("");
-  const [userEmail, setUserEmail] = useState<string>("");
+  const [localUserName, setLocalUserName] = useState<string>(userName ?? "");
+  const [localUserEmail, setLocalUserEmail] = useState<string>(userEmail ?? "");
   const [uploading, setUploading] = useState(false);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,8 +39,8 @@ export function SettingsScreen({ onBack, onLogout, accessToken, userName, userAv
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        setUserName(user.user_metadata?.name || "");
-        setUserEmail(user.email || "");
+        setLocalUserName(user.user_metadata?.name || "");
+        setLocalUserEmail(user.email || "");
        const avatar =
   user.user_metadata?.profile_picture ||
   user.user_metadata?.avatar_url ||
@@ -120,7 +120,7 @@ setProfilePicture(avatar);
     try {
       const supabase = getSupabaseClient();
       const { error } = await supabase.auth.updateUser({
-        data: { name: userName }
+        data: { name: localuserName }
       });
 
       if (error) throw error;
@@ -202,7 +202,7 @@ setProfilePicture(avatar);
                     className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold"
                     style={{ backgroundColor: '#A592AB' }}
                   >
-                    {getInitials(userName)}
+                    {getInitials(localuserName)}
                   </div>
                 )}
                 
@@ -234,8 +234,8 @@ setProfilePicture(avatar);
                       <Label htmlFor="name">Name</Label>
                       <Input
                         id="name"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
+                        value={localuserName}
+                        onChange={(e) => setLocalUserName(e.target.value)}
                         placeholder="Enter your name"
                       />
                     </div>
@@ -243,7 +243,7 @@ setProfilePicture(avatar);
                       <Label htmlFor="email">Email</Label>
                       <Input
                         id="email"
-                        value={userEmail}
+                        value={localuserEmail}
                         disabled
                         className="bg-gray-100"
                       />
@@ -261,7 +261,7 @@ setProfilePicture(avatar);
                 ) : (
                   <>
                     <h4 className="font-medium" style={{ color: '#594F62' }}>{userName || "User"}</h4>
-                    <p className="text-sm" style={{ color: '#776B7D' }}>{userEmail}</p>
+                    <p className="text-sm" style={{ color: '#776B7D' }}>{localuserEmail}</p>
                     <p className="text-xs mt-2" style={{ color: '#A592AB' }}>
                       Click "Edit" to update your name or hover over your picture to change it
                     </p>
@@ -332,7 +332,7 @@ setProfilePicture(avatar);
             </div>
           </Card>
 
-          {userEmail === "geminie14@gmail.com" && (
+          {localuserEmail === "geminie14@gmail.com" && (
   <Card className="p-6 bg-white">
     <button
       onClick={() => onNavigate?.("admin-questions")}
