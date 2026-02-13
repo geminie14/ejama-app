@@ -153,25 +153,28 @@ const loadCommunityData = async () => {
         },
       }
     );
-    
-      
 
-  const incomingCategories = data.categories ?? [];
-  setCategories(incomingCategories.length > 0 ? incomingCategories : DEFAULT_CATEGORIES);
+    if (response.ok) {
+      const data = await response.json();
 
-  setThreads(data.threads ?? []);
-  setPosts(data.posts ?? []);
-  setJoinedCategoryIds(data.joinedCategories ?? []);
+      const incomingCategories = data.categories ?? [];
+      setCategories(incomingCategories.length > 0 ? incomingCategories : DEFAULT_CATEGORIES);
 
-      } else {
-  setCategories(DEFAULT_CATEGORIES);
-  setThreads([]);
-  setPosts([]);
-  setJoinedCategoryIds([]);
-}
-
+      setThreads(data.threads ?? []);
+      setPosts(data.posts ?? []);
+      setJoinedCategoryIds(data.joinedCategories ?? []);
+    } else {
+      setCategories(DEFAULT_CATEGORIES);
+      setThreads([]);
+      setPosts([]);
+      setJoinedCategoryIds([]);
+    }
   } catch (error) {
     console.error("Error loading community data:", error);
+    setCategories(DEFAULT_CATEGORIES);
+    setThreads([]);
+    setPosts([]);
+    setJoinedCategoryIds([]);
   }
 };
 
@@ -331,8 +334,10 @@ const loadAnsweredQuestions = async () => {
   // ✅ New post form
   const [newPostText, setNewPostText] = useState("");
 
-  const selectedCategory = categories.find((c) => c.id === selectedCategoryId) || null;
-  const selectedThread = threads.find((t) => t.id === selectedThreadId) || null;
+ const selectedCategory = categories.find((c) => c.id === selectedCategoryId) || null;
+const selectedThread = threads.find((t) => t.id === selectedThreadId) || null;
+
+const threadCategoryId = selectedThread?.categoryId ?? null;
 
   const threadsInCategory = useMemo(() => {
     if (!selectedCategoryId) return [];
@@ -439,10 +444,13 @@ const loadAnsweredQuestions = async () => {
           </div>
         </div>
 
-        <Card className="p-4 bg-white">
-  <h3 className="font-semibold" style={{ color: "#594F62" }}>Community</h3>
+       {/* Q&A entry card (always visible) */}
+<Card className="p-4 bg-white">
+  <h3 className="font-semibold" style={{ color: "#594F62" }}>
+    Community Q&A
+  </h3>
   <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
-    Ask anonymously, learn from answers, and connect with others.
+    Ask anonymously and browse answers from the Ejama team.
   </p>
 
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
@@ -463,9 +471,12 @@ const loadAnsweredQuestions = async () => {
       <BookOpenText className="w-4 h-4 mr-2" />
       Browse Answered Questions
     </Button>
- {/* VIEW Q&A: Ask */}
+  </div>
+</Card>
+
+{/* VIEW Q&A: Ask */}
 {qaMode === "ask" && !selectedCategoryId && !selectedThreadId && (
-  <div className="space-y-4">
+  <div className="mt-4 space-y-4">
     <Card className="p-4 bg-white space-y-3">
       <div>
         <h3 className="font-semibold" style={{ color: "#594F62" }}>
@@ -517,9 +528,14 @@ const loadAnsweredQuestions = async () => {
 
       <Button variant="outline" className="w-full" onClick={() => setQaMode("home")}>
         Cancel
-      {/* VIEW Q&A: Browse */}
+      </Button>
+    </Card>
+  </div>
+)}
+
+{/* VIEW Q&A: Browse */}
 {qaMode === "browse" && !selectedCategoryId && !selectedThreadId && (
-  <div className="space-y-4">
+  <div className="mt-4 space-y-4">
     <Card className="p-4 bg-white space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -542,7 +558,7 @@ const loadAnsweredQuestions = async () => {
           onChange={(e) => setQaQuery(e.target.value)}
           placeholder="Search questions..."
         />
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={qaFilter === "answered" ? "default" : "outline"}
             className={qaFilter === "answered" ? "text-white" : ""}
@@ -577,7 +593,9 @@ const loadAnsweredQuestions = async () => {
 
     {qaLoading ? (
       <Card className="p-4 bg-white">
-        <p className="text-sm" style={{ color: "#776B7D" }}>Loading...</p>
+        <p className="text-sm" style={{ color: "#776B7D" }}>
+          Loading...
+        </p>
       </Card>
     ) : qaItems.length === 0 ? (
       <Card className="p-4 bg-white">
@@ -593,7 +611,8 @@ const loadAnsweredQuestions = async () => {
         {qaItems.map((item) => (
           <Card key={item.id} className="p-4 bg-white">
             <p className="text-xs" style={{ color: "#9A92AB" }}>
-              Category: {item.category || "general"} • Status: {item.status || (item.answer ? "answered" : "unanswered")}
+              Category: {item.category || "general"} • Status:{" "}
+              {item.status || (item.answer ? "answered" : "unanswered")}
             </p>
 
             <p className="text-sm font-semibold mt-2" style={{ color: "#594F62" }}>
@@ -626,30 +645,47 @@ const loadAnsweredQuestions = async () => {
 )}
 
 
-
        {/* VIEW 1: Categories */}
 {!selectedCategoryId && !selectedThreadId && qaMode === "home" && (
-  <div className="space-y-4">
-    {/* Create community button */}
-    {!creatingCommunity && (
-      <Button
-        className="w-full text-white"
-        style={{ backgroundColor: "#A592AB" }}
-        onClick={() => setCreatingCommunity(true)}
-      >
-        <Plus className="w-4 h-4 mr-2" />
-        Create a new community
-      </Button>
-    )}
+  <div className="mt-4 space-y-4">
+    {/* Forum Categories (Coming soon) */}
+    <Card className="p-4 bg-white">
+      <h3 className="font-semibold" style={{ color: "#594F62" }}>
+        Community Forums
+      </h3>
+      <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+        Coming soon — you’ll be able to join communities and chat with others.
+      </p>
+    </Card>
 
-    {/* Q&A entry points */}
-<Card className="p-4 bg-white">
-  <h3 className="font-semibold" style={{ color: "#594F62" }}>
-    Community Q&A
-  </h3>
-  <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
-    Ask anonymously and browse answers from the Ejama team.
-  </p>
+    {categories.map((cat) => (
+      <Card key={cat.id} className="p-4 bg-white opacity-60 cursor-not-allowed">
+        <div className="flex items-start justify-between gap-3">
+          <div className="text-2xl">{cat.icon}</div>
+
+          <div className="flex-1">
+            <h3 className="font-semibold" style={{ color: "#594F62" }}>
+              {cat.title}
+            </h3>
+            <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+              {cat.description}
+            </p>
+
+            <div
+              className="mt-2 inline-flex items-center rounded-full px-3 py-1 text-xs"
+              style={{ backgroundColor: "#F4F0FF", color: "#776B7D" }}
+            >
+              Coming soon
+            </div>
+          </div>
+
+          <ChevronRight className="w-5 h-5 mt-1" style={{ color: "#9A92AB" }} />
+        </div>
+      </Card>
+    ))}
+  </div>
+)}
+
 
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
     <Button
