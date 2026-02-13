@@ -81,7 +81,7 @@ setProfilePicture(avatar);
         
         // Upload to server
         const response = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/profile/picture`,
+          ``${supabaseUrl}/functions/v1/make-server-1aee76a8/profile/picture`,
           {
             method: "POST",
             headers: {
