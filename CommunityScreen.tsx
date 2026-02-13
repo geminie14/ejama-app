@@ -688,27 +688,6 @@ const threadCategoryId = selectedThread?.categoryId ?? null;
 )}
 
 
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-    <Button
-      className="w-full text-white justify-start"
-      style={{ backgroundColor: "#A592AB" }}
-      onClick={() => setQaMode("ask")}
-    >
-      <HelpCircle className="w-4 h-4 mr-2" />
-      Ask a Question (Anonymous)
-    </Button>
-
-    <Button
-      variant="outline"
-      className="w-full justify-start"
-      onClick={() => setQaMode("browse")}
-    >
-      <BookOpenText className="w-4 h-4 mr-2" />
-      Browse Answered Questions
-    </Button>
-  </div>
-</Card>
-
     {/* Create community form */}
     {creatingCommunity && (
       <Card className="p-4 bg-white space-y-3">
