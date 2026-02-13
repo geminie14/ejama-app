@@ -51,7 +51,7 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState<string>("");
   const [userAvatar, setUserAvatar] = useState("");
-  const [userEmail, setUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState<string>("");
 
 
   useEffect(() => {
@@ -242,7 +242,7 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
       accessToken={accessToken}
       userName={userName}
       userAvatar={userAvatar}
-      userEmail={""} // optional; OR fetch from supabase in App and store it
+      userEmail=("") // optional; OR fetch from supabase in App and store it
       onNavigate={(s) => handleNavigate(s)}
     />
   );
