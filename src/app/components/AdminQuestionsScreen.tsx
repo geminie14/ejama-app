@@ -1,4 +1,3 @@
-// src/app/components/AdminQuestionsScreen.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -24,8 +23,7 @@ type FilterStatus = "all" | "unanswered" | "answered";
 
 interface AdminQuestionsScreenProps {
   onBack: () => void;
-  /** optional: if you already pass accessToken around */
-  accessToken?: string;
+    accessToken?: string;
 }
 
 function fmtDate(iso: string) {
@@ -93,8 +91,7 @@ export function AdminQuestionsScreen({ onBack }: AdminQuestionsScreenProps) {
 
       setRows((data || []) as QuestionRow[]);
 
-      // Keep selection fresh
-      if (selected) {
+           if (selected) {
         const updated = (data || []).find((r: any) => r.id === selected.id) as QuestionRow | undefined;
         setSelected(updated || null);
         setDraftAnswer(updated?.answer || "");
@@ -109,7 +106,7 @@ export function AdminQuestionsScreen({ onBack }: AdminQuestionsScreenProps) {
 
   useEffect(() => {
     fetchQuestions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   useEffect(() => {
@@ -127,7 +124,6 @@ export function AdminQuestionsScreen({ onBack }: AdminQuestionsScreenProps) {
     try {
       const payload: Partial<QuestionRow> = { answered };
 
-      // If marking answered, keep whatever answer is in the box
       if (answered) payload.answer = draftAnswer?.trim() || null;
 
       const { error } = await supabase.from("questions").update(payload).eq("id", selected.id);
@@ -156,7 +152,7 @@ export function AdminQuestionsScreen({ onBack }: AdminQuestionsScreenProps) {
         .from("questions")
         .update({
           answer,
-          answered: !!answer, // auto mark answered if there’s an answer
+          answered: !!answer, 
         })
         .eq("id", selected.id);
 
