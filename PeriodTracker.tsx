@@ -24,41 +24,71 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
     loadTrackingData();
   }, []);
 
-  const loadTrackingData = async () => {
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/period-tracking`,
+ const PERIOD_TRACKING_URL = `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/period-tracking`;
 
-        {
-          headers: {
-  Authorization: `Bearer ${accessToken}`,
-  apikey: publicAnonKey,
-}
-      );
+const loadTrackingData = async () => {
+  try {
+    const response = await fetch(PERIOD_TRACKING_URL, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        apikey: publicAnonKey,
+      },
+    });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.data?.selectedDates) {
-          if (result.data?.selectedDates?.length >= 2) {
-  setRange({
-    from: new Date(result.data.selectedDates[0]),
-    to: new Date(result.data.selectedDates[1]),
-  });
-}
+    if (!response.ok) return;
 
-        }
-        if (result.data?.cycleLength) {
-          setCycleLength(result.data.cycleLength);
-        }
-        if (result.data?.periodLength) {
-          setPeriodLength(result.data.periodLength);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading tracking data (network issue or server not deployed):", error);
-      // Silently fail on initial load - user can still use the app
+    const result = await response.json();
+
+    if (result?.data?.selectedDates?.length >= 2) {
+      setRange({
+        from: new Date(result.data.selectedDates[0]),
+        to: new Date(result.data.selectedDates[1]),
+      });
     }
-  };
+
+    if (result?.data?.cycleLength) setCycleLength(String(result.data.cycleLength));
+    if (result?.data?.periodLength) setPeriodLength(String(result.data.periodLength));
+  } catch (e) {
+    console.error("Error loading tracking data:", e);
+  }
+};
+
+const handleSave = async () => {
+  setLoading(true);
+  try {
+    const selectedDates =
+      range?.from && range?.to
+        ? [range.from.toISOString(), range.to.toISOString()]
+        : [];
+
+    const response = await fetch(PERIOD_TRACKING_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        apikey: publicAnonKey,
+      },
+      body: JSON.stringify({
+        selectedDates,
+        cycleLength,
+        periodLength,
+      }),
+    });
+
+    if (response.ok) {
+      toast.success("Tracking data saved successfully!");
+    } else {
+      const err = await response.json().catch(() => ({}));
+      toast.error(err?.error || "Failed to save tracking data");
+    }
+  } catch (e) {
+    console.error("Error saving tracking data:", e);
+    toast.error("Network error. Please check your connection and try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 const getDatesInRange = (from?: Date, to?: Date) => {
   if (!from || !to) return [];
   const dates: Date[] = [];
