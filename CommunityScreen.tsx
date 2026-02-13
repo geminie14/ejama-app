@@ -1,11 +1,20 @@
 import { useMemo, useState, useEffect } from "react";
-import { ArrowLeft, ChevronRight, Heart, MessageCirclePlus, Plus, HelpCircle, BookOpenText } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Heart,
+  MessageCirclePlus,
+  Plus,
+  HelpCircle,
+  BookOpenText,
+  Send,
+} from "lucide-react";
 import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
+import { Label } from "@/app/components/ui/label";
 import { toast } from "sonner";
-import { HelpCircle, BookOpenText, Send } from "lucide-react";
 import { projectId } from "@/utils/supabase/info";
 
 interface CommunityScreenProps {
@@ -123,6 +132,14 @@ const QA_LIST_URL = `https://${projectId}.supabase.co/functions/v1/make-server-1
 const [joinedCategoryIds, setJoinedCategoryIds] = useState<string[]>([]);
 
 useEffect(() => {
+  if (qaMode === "browse") {
+    loadAnsweredQuestions();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [qaMode, qaFilter]);
+
+
+useEffect(() => {
   loadCommunityData();
 }, []);
 
@@ -137,13 +154,7 @@ const loadCommunityData = async () => {
       }
     );
     
-    if (response.ok) {
-  const data = await response.json();
       
-    if (qaMode === "browse") loadAnsweredQuestions();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [qaMode, qaFilter]);
-    
 
   const incomingCategories = data.categories ?? [];
   setCategories(incomingCategories.length > 0 ? incomingCategories : DEFAULT_CATEGORIES);
@@ -710,27 +721,42 @@ const loadAnsweredQuestions = async () => {
     )}
 
     
-    {categories.map((cat) => (
-      <Card
-        key={cat.id}
-        className="p-4 bg-white cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => setSelectedCategoryId(cat.id)}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="text-2xl">{cat.icon}</div>
+    {/* Forum Categories (Coming soon) */}
+<Card className="p-4 bg-white">
+  <h3 className="font-semibold" style={{ color: "#594F62" }}>
+    Community Forums
+  </h3>
+  <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+    Coming soon — you’ll be able to join communities and chat with others.
+  </p>
+</Card>
 
-          <div className="flex-1">
-            <h3 className="font-semibold" style={{ color: "#594F62" }}>
-              {cat.title}
-            </h3>
+{categories.map((cat) => (
+  <Card
+    key={cat.id}
+    className="p-4 bg-white opacity-60 cursor-not-allowed"
+  >
+    <div className="flex items-start justify-between gap-3">
+      <div className="text-2xl">{cat.icon}</div>
 
-            <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
-              {cat.description}
-            </p>
+      <div className="flex-1">
+        <h3 className="font-semibold" style={{ color: "#594F62" }}>
+          {cat.title}
+        </h3>
+        <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+          {cat.description}
+        </p>
 
-            <p className="text-xs mt-2" style={{ color: "#9A92AB" }}>
-              {threads.filter((t) => t.categoryId === cat.id).length} threads
-            </p>
+        <div className="mt-2 inline-flex items-center rounded-full px-3 py-1 text-xs"
+             style={{ backgroundColor: "#F4F0FF", color: "#776B7D" }}>
+          Coming soon
+        </div>
+      </div>
+
+      <ChevronRight className="w-5 h-5 mt-1" style={{ color: "#9A92AB" }} />
+    </div>
+  </Card>
+))}
 
             {/* JOIN BUTTON (browse allowed; joining optional) */}
             <div className="mt-2 flex items-center gap-2">
