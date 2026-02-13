@@ -14,9 +14,11 @@ import { FeedbackScreen } from "@/app/components/FeedbackScreen";
 import { SettingsScreen } from "@/app/components/SettingsScreen";
 import { ResetPasswordScreen } from "@/app/components/ResetPasswordScreen";
 import { Toaster } from "@/app/components/ui/sonner";
+import { AdminQuestionsScreen } from "@/app/components/AdminQuestionsScreen";
 import { getSupabaseClient } from "@/utils/supabase/client";
 
-type Screen = "welcome" | "home" | "locator" | "education"  | "feedback" | "settings" | "reset-password" | "tracker" | "ask-question";
+type Screen = "welcome" | "home" | "locator" | "education"  | "feedback" | "settings" | "reset-password" | "tracker" | "ask-question" | "admin-questions"
+;
 type AuthMode = "signup" | "login" | "reset";
 
 export default function App() {
@@ -38,6 +40,8 @@ export default function App() {
     "settings",
     "tracker",
     "ask-question",
+    "admin-questions",
+
   ];
 
   const [currentScreen, setCurrentScreen] = useState<Screen>("welcome");
@@ -229,7 +233,9 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
         return <FeedbackScreen onBack={handleBack} />;
       case "settings":
         return <SettingsScreen onBack={handleBack} onLogout={handleLogout} accessToken={accessToken} userName={userName} userAvatar={userAvatar}/>;
-      case "reset-password":
+      case "admin-questions":
+  return <AdminQuestionsScreen onBack={handleBack} accessToken={accessToken} />;
+    case "reset-password":
         return (
           <ResetPasswordScreen
             onDone={() => {
