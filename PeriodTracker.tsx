@@ -106,12 +106,6 @@ const getDatesInRange = (from?: Date, to?: Date) => {
 };
 
   
-  const handleSave = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-  `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/period-tracking`,
-  {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
