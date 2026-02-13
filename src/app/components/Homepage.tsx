@@ -270,8 +270,6 @@ useEffect(() => {
   subtitle="Stay on top of your cycle"
   icon={<Calendar className="w-6 h-6" />}
   onClick={() => onNavigate("tracker")}
-  disabled
-  badge="Coming soon"
 />
 
 <Tile
