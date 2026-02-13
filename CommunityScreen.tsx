@@ -5,6 +5,7 @@ import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { toast } from "sonner";
+import { HelpCircle, BookOpenText, Send } from "lucide-react";
 import { projectId } from "@/utils/supabase/info";
 
 interface CommunityScreenProps {
@@ -81,7 +82,32 @@ const [creatingCommunity, setCreatingCommunity] = useState(false);
 const [newCommunityTitle, setNewCommunityTitle] = useState("");
 const [newCommunityDescription, setNewCommunityDescription] = useState("");
 const [newCommunityIcon, setNewCommunityIcon] = useState("💬");
+// Q&A mode inside Community
 const [qaMode, setQaMode] = useState<"home" | "ask" | "browse">("home");
+
+// Ask form
+const [qaCategory, setQaCategory] = useState("general");
+const [qaQuestion, setQaQuestion] = useState("");
+const [qaSubmitting, setQaSubmitting] = useState(false);
+
+// Browse list
+type QaItem = {
+  id: string;
+  question: string;
+  answer?: string | null;
+  category?: string | null;
+  status?: "answered" | "unanswered" | string;
+  created_at?: string;
+  answered_at?: string | null;
+};
+const [qaItems, setQaItems] = useState<QaItem[]>([]);
+const [qaLoading, setQaLoading] = useState(false);
+const [qaQuery, setQaQuery] = useState("");
+const [qaFilter, setQaFilter] = useState<"all" | "answered" | "unanswered">("answered");
+
+const QA_SUBMIT_URL = `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/questions/submit`;
+const QA_LIST_URL = `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/questions/list`;
+ 
 
   // ✅ Threads (seed data)
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -113,6 +139,11 @@ const loadCommunityData = async () => {
     
     if (response.ok) {
   const data = await response.json();
+      
+    if (qaMode === "browse") loadAnsweredQuestions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [qaMode, qaFilter]);
+    
 
   const incomingCategories = data.categories ?? [];
   setCategories(incomingCategories.length > 0 ? incomingCategories : DEFAULT_CATEGORIES);
@@ -217,7 +248,71 @@ const createCommunity = async () => {
     toast.error("Failed to create community");
   }
 };
+const submitAnonymousQuestion = async () => {
+  const q = qaQuestion.trim();
+  if (!q) return toast.error("Please type your question.");
 
+  setQaSubmitting(true);
+  try {
+    const res = await fetch(QA_SUBMIT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        question: q,
+        category: qaCategory,
+        // Optional: lets you use it later to show "your question" after refresh without identity.
+        // Keep if you want; safe to remove.
+        client_generated_id: `q_${Date.now()}`,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      return toast.error(data?.error || "Failed to submit question.");
+    }
+
+    toast.success("Question submitted! Check back in Community → Browse Answered Questions.");
+    setQaQuestion("");
+    setQaCategory("general");
+    setQaMode("home");
+  } catch (e) {
+    console.error("submitAnonymousQuestion error:", e);
+    toast.error("Network error. Please try again.");
+  } finally {
+    setQaSubmitting(false);
+  }
+};
+
+const loadAnsweredQuestions = async () => {
+  setQaLoading(true);
+  try {
+    const url = new URL(QA_LIST_URL);
+    url.searchParams.set("filter", qaFilter); // answered | unanswered | all
+    if (qaQuery.trim()) url.searchParams.set("q", qaQuery.trim());
+
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setQaItems([]);
+      return toast.error(data?.error || "Failed to load questions.");
+    }
+
+    setQaItems(Array.isArray(data?.items) ? data.items : []);
+  } catch (e) {
+    console.error("loadAnsweredQuestions error:", e);
+    toast.error("Network error. Please try again.");
+  } finally {
+    setQaLoading(false);
+  }
+};
+  
   // ✅ New thread form
   const [newThreadTitle, setNewThreadTitle] = useState("");
   const [creatingThread, setCreatingThread] = useState(false);
@@ -239,19 +334,26 @@ const createCommunity = async () => {
   }, [posts, selectedThreadId]);
 
   // ✅ Back button (step-by-step)
-  const handleBackClick = () => {
-    if (selectedThreadId) {
-      setSelectedThreadId(null);
-      return;
-    }
-    if (selectedCategoryId) {
-      setSelectedCategoryId(null);
-      setCreatingThread(false);
-      setNewThreadTitle("");
-      return;
-    }
-    onBack();
-  };
+ const handleBackClick = () => {
+  if (selectedThreadId) {
+    setSelectedThreadId(null);
+    return;
+  }
+  if (selectedCategoryId) {
+    setSelectedCategoryId(null);
+    setCreatingThread(false);
+    setNewThreadTitle("");
+    return;
+  }
+
+  // Q&A back handling
+  if (qaMode !== "home") {
+    setQaMode("home");
+    return;
+  }
+
+  onBack();
+};
 
   const headerTitle = selectedThread
     ? "Discussion"
@@ -350,8 +452,169 @@ const createCommunity = async () => {
       <BookOpenText className="w-4 h-4 mr-2" />
       Browse Answered Questions
     </Button>
+ {/* VIEW Q&A: Ask */}
+{qaMode === "ask" && !selectedCategoryId && !selectedThreadId && (
+  <div className="space-y-4">
+    <Card className="p-4 bg-white space-y-3">
+      <div>
+        <h3 className="font-semibold" style={{ color: "#594F62" }}>
+          Ask a Question (Anonymous)
+        </h3>
+        <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+          Your name won’t be shown. Check back in “Browse Answered Questions” to see responses.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Category</Label>
+        <select
+          value={qaCategory}
+          onChange={(e) => setQaCategory(e.target.value)}
+          className="w-full border rounded-md p-2 text-sm"
+        >
+          <option value="general">General</option>
+          <option value="pain">Pain / cramps</option>
+          <option value="cycle">Cycle / tracking</option>
+          <option value="products">Products & access</option>
+          <option value="health">Health concerns</option>
+          <option value="stigma">Myths & stigma</option>
+        </select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Your question</Label>
+        <Textarea
+          value={qaQuestion}
+          onChange={(e) => setQaQuestion(e.target.value)}
+          placeholder="Type your question here..."
+          className="min-h-[120px]"
+        />
+        <p className="text-xs" style={{ color: "#9A92AB" }}>
+          If you have severe symptoms or feel unsafe, seek medical help immediately.
+        </p>
+      </div>
+
+      <Button
+        disabled={qaSubmitting}
+        className="w-full text-white"
+        style={{ backgroundColor: "#A592AB" }}
+        onClick={submitAnonymousQuestion}
+      >
+        <Send className="w-4 h-4 mr-2" />
+        {qaSubmitting ? "Submitting..." : "Submit Question"}
+      </Button>
+
+      <Button variant="outline" className="w-full" onClick={() => setQaMode("home")}>
+        Cancel
+      {/* VIEW Q&A: Browse */}
+{qaMode === "browse" && !selectedCategoryId && !selectedThreadId && (
+  <div className="space-y-4">
+    <Card className="p-4 bg-white space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-semibold" style={{ color: "#594F62" }}>
+            Browse Answered Questions
+          </h3>
+          <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+            Search and read answers. New answers appear here after the team responds.
+          </p>
+        </div>
+
+        <Button variant="outline" onClick={loadAnsweredQuestions}>
+          Refresh
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        <Input
+          value={qaQuery}
+          onChange={(e) => setQaQuery(e.target.value)}
+          placeholder="Search questions..."
+        />
+        <div className="flex gap-2">
+          <Button
+            variant={qaFilter === "answered" ? "default" : "outline"}
+            className={qaFilter === "answered" ? "text-white" : ""}
+            style={qaFilter === "answered" ? { backgroundColor: "#A592AB" } : {}}
+            onClick={() => setQaFilter("answered")}
+          >
+            Answered
+          </Button>
+          <Button
+            variant={qaFilter === "unanswered" ? "default" : "outline"}
+            className={qaFilter === "unanswered" ? "text-white" : ""}
+            style={qaFilter === "unanswered" ? { backgroundColor: "#A592AB" } : {}}
+            onClick={() => setQaFilter("unanswered")}
+          >
+            Unanswered
+          </Button>
+          <Button
+            variant={qaFilter === "all" ? "default" : "outline"}
+            className={qaFilter === "all" ? "text-white" : ""}
+            style={qaFilter === "all" ? { backgroundColor: "#A592AB" } : {}}
+            onClick={() => setQaFilter("all")}
+          >
+            All
+          </Button>
+
+          <Button variant="outline" onClick={loadAnsweredQuestions}>
+            Search
+          </Button>
+        </div>
+      </div>
+    </Card>
+
+    {qaLoading ? (
+      <Card className="p-4 bg-white">
+        <p className="text-sm" style={{ color: "#776B7D" }}>Loading...</p>
+      </Card>
+    ) : qaItems.length === 0 ? (
+      <Card className="p-4 bg-white">
+        <p className="text-sm font-semibold" style={{ color: "#594F62" }}>
+          No questions found
+        </p>
+        <p className="text-xs mt-1" style={{ color: "#776B7D" }}>
+          Try a different search, or switch filters.
+        </p>
+      </Card>
+    ) : (
+      <div className="space-y-3">
+        {qaItems.map((item) => (
+          <Card key={item.id} className="p-4 bg-white">
+            <p className="text-xs" style={{ color: "#9A92AB" }}>
+              Category: {item.category || "general"} • Status: {item.status || (item.answer ? "answered" : "unanswered")}
+            </p>
+
+            <p className="text-sm font-semibold mt-2" style={{ color: "#594F62" }}>
+              {item.question}
+            </p>
+
+            {item.answer ? (
+              <div className="mt-3 p-3 rounded-md" style={{ backgroundColor: "#F4F0FF" }}>
+                <p className="text-xs font-semibold" style={{ color: "#776B7D" }}>
+                  Answer
+                </p>
+                <p className="text-sm mt-1" style={{ color: "#594F62" }}>
+                  {item.answer}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm mt-3" style={{ color: "#776B7D" }}>
+                Not answered yet.
+              </p>
+            )}
+          </Card>
+        ))}
+      </div>
+    )}
+
+    <Button variant="outline" className="w-full" onClick={() => setQaMode("home")}>
+      Back to Community
+    </Button>
   </div>
-</Card>
+)}
+
+
 
        {/* VIEW 1: Categories */}
 {!selectedCategoryId && !selectedThreadId && qaMode === "home" && (
@@ -367,6 +630,36 @@ const createCommunity = async () => {
         Create a new community
       </Button>
     )}
+
+    {/* Q&A entry points */}
+<Card className="p-4 bg-white">
+  <h3 className="font-semibold" style={{ color: "#594F62" }}>
+    Community Q&A
+  </h3>
+  <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+    Ask anonymously and browse answers from the Ejama team.
+  </p>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+    <Button
+      className="w-full text-white justify-start"
+      style={{ backgroundColor: "#A592AB" }}
+      onClick={() => setQaMode("ask")}
+    >
+      <HelpCircle className="w-4 h-4 mr-2" />
+      Ask a Question (Anonymous)
+    </Button>
+
+    <Button
+      variant="outline"
+      className="w-full justify-start"
+      onClick={() => setQaMode("browse")}
+    >
+      <BookOpenText className="w-4 h-4 mr-2" />
+      Browse Answered Questions
+    </Button>
+  </div>
+</Card>
 
     {/* Create community form */}
     {creatingCommunity && (
