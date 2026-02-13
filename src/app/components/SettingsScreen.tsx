@@ -13,9 +13,15 @@ interface SettingsScreenProps {
   onBack: () => void;
   onLogout: () => void;
   accessToken: string;
+
+  userName: string;
+  userAvatar?: string;
+  userEmail?: string;
+
+  onNavigate?: (screen: "admin-questions") => void;
 }
 
-export function SettingsScreen({ onBack, onLogout, accessToken }: SettingsScreenProps) {
+export function SettingsScreen({ onBack, onLogout, accessToken, userName, userAvatar, userEmail, onNavigate, }: SettingsScreenProps) {
   const [profilePicture, setProfilePicture] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
