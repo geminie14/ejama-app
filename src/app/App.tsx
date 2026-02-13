@@ -242,8 +242,8 @@ setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
       accessToken={accessToken}
       userName={userName}
       userAvatar={userAvatar}
-      userEmail={userEmail}
-      onNavigate={handleNavigate}
+      userEmail={""} // optional; OR fetch from supabase in App and store it
+      onNavigate={(s) => handleNavigate(s)}
     />
   );
       case "admin-questions":
