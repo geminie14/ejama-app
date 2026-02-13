@@ -28,6 +28,7 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/period-tracking`,
+
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
