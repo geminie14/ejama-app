@@ -23,9 +23,10 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadTrackingData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  if (!accessToken) return;
+  loadTrackingData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [accessToken]);
 
   const PERIOD_TRACKING_ENDPOINT = `${supabaseUrl}/functions/v1/make-server-1aee76a8/period-tracking`;
 
