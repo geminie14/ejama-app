@@ -836,8 +836,3 @@ export function CommunityScreen({
     </div>
   );
 }
-
-      </div>
-    </div>
-  );
-}
