@@ -17,8 +17,8 @@ import {
 type Screen =
   | "welcome"
   | "home"
-  | "products"
   | "locator"
+  | "products"
   | "education"
   | "community"
   | "ask-expert"
@@ -26,7 +26,9 @@ type Screen =
   | "health-tips"
   | "feedback"
   | "settings"
-  | "reset-password";
+  | "reset-password"
+  | "ask-question"
+  | "admin-questions";
 
 type HomepageProps = {
   onNavigate: (screen: Screen) => void;
@@ -137,15 +139,13 @@ export function Homepage({
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ Helper: open CommunityScreen directly in Q&A mode (Ask)
+  // ✅ Ask Ejama -> open Community in "ask" mode
   const openAskEjama = () => {
-    // If you have a router, this is the most reliable way to pass "ask" mode:
-    // CommunityScreen will read ?qa=ask and set initialQaMode accordingly.
     window.history.pushState({}, "", "/?screen=community&qa=ask");
     onNavigate("community");
   };
 
-  // ✅ Helper: open Community normally
+  // ✅ Community home
   const openCommunity = () => {
     window.history.pushState({}, "", "/?screen=community");
     onNavigate("community");
@@ -160,7 +160,6 @@ export function Homepage({
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-8">
           <div>
-            {/* Brand */}
             <div className="text-4xl font-extrabold tracking-tight text-[#4B3F72]">
               Ejama
             </div>
@@ -169,11 +168,11 @@ export function Homepage({
               Empowering Menstrual Health
             </div>
 
-            {/* Greeting Card */}
             <div className="mt-5 rounded-2xl bg-white/60 backdrop-blur-sm px-4 py-3 shadow-sm border border-[#E7DDFF]">
               <div className="text-base font-semibold text-[#594F62]">
                 {greeting}, {firstName} 👋
               </div>
+
               <div className="text-xs text-[#8B8196]">
                 What would you like to explore today?
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -212,7 +211,11 @@ export function Homepage({
             aria-label="Open settings"
           >
             {userAvatar ? (
-              <img src={userAvatar} alt="Avatar" className="h-full w-full object-cover" />
+              <img
+                src={userAvatar}
+                alt="Avatar"
+                className="h-full w-full object-cover"
+              />
             ) : (
               <span className="text-sm font-semibold text-[#594F62]">
                 {userName?.trim()?.slice(0, 1)?.toUpperCase() || "U"}
@@ -221,7 +224,7 @@ export function Homepage({
           </button>
         </div>
 
-        {/* Primary Actions (BIG) */}
+        {/* Primary Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <Tile
             variant="primary"
@@ -251,7 +254,6 @@ export function Homepage({
 
         {/* Secondary Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* ✅ Ask Ejama is inside Community Q&A */}
           <Tile
             title="Ask Ejama"
             subtitle="Ask questions anonymously"
@@ -260,7 +262,7 @@ export function Homepage({
             badge="💜 Anonymous"
           />
 
-          {/* ✅ Community is LIVE now (no coming soon) */}
+          {/* ✅ Community is LIVE (no disabled, no coming soon) */}
           <Tile
             title="Community"
             subtitle="Connect & share"
@@ -319,7 +321,6 @@ export function Homepage({
           </Button>
         </div>
 
-        {/* Footer */}
         <Card className="mt-6 p-4 rounded-2xl border-[#B2A0B9] bg-[#D4C4EC]">
           <p className="text-sm text-center text-[#594F62]">
             Ejama v1.0 • Made with 💜 for women&apos;s health
