@@ -15,7 +15,6 @@ import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Label } from "@/app/components/ui/label";
 import { toast } from "sonner";
-import { projectId } from "@/utils/supabase/info";
 
 interface CommunityScreenProps {
   onBack: () => void;
@@ -47,6 +46,16 @@ type Post = {
   createdAt: string;
   content: string;
   likes: number;
+};
+
+type QaItem = {
+  id: string;
+  question: string;
+  answer?: string | null;
+  category?: string | null;
+  status?: "answered" | "unanswered" | string;
+  created_at?: string;
+  answered_at?: string | null;
 };
 
 function nowLabel() {
@@ -90,6 +99,20 @@ export function CommunityScreen({
   accessToken,
   initialQaMode,
 }: CommunityScreenProps) {
+  /**
+   * ✅ IMPORTANT FIX:
+   * We DO NOT import `projectId` anymore (your build error).
+   * We build Edge Function URLs from NEXT_PUBLIC_SUPABASE_URL.
+   */
+  const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "");
+  const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
+
+  const QA_SUBMIT_URL = `${FUNCTIONS_BASE}/questions/submit`;
+  const QA_LIST_URL = `${FUNCTIONS_BASE}/questions/list`;
+  const COMMUNITY_DATA_URL = `${FUNCTIONS_BASE}/community/data`;
+  const COMMUNITY_JOIN_URL = `${FUNCTIONS_BASE}/community/join`;
+  const COMMUNITY_CREATE_URL = `${FUNCTIONS_BASE}/community/create`;
+
   // ✅ Categories
   const [categories, setCategories] = useState<ForumCategory[]>(DEFAULT_CATEGORIES);
   const [creatingCommunity, setCreatingCommunity] = useState(false);
@@ -97,48 +120,36 @@ export function CommunityScreen({
   const [newCommunityDescription, setNewCommunityDescription] = useState("");
   const [newCommunityIcon, setNewCommunityIcon] = useState("💬");
 
-  // ✅ Q&A mode inside Community (LIVE)
-  const [qaMode, setQaMode] = useState<"home" | "ask" | "browse">(
-    initialQaMode ?? "home"
-  );
-
-  // ✅ Ask form
+  // ✅ Q&A mode
+  const [qaMode, setQaMode] = useState<"home" | "ask" | "browse">(initialQaMode ?? "home");
   const [qaCategory, setQaCategory] = useState("general");
   const [qaQuestion, setQaQuestion] = useState("");
   const [qaSubmitting, setQaSubmitting] = useState(false);
 
-  // ✅ Browse list
-  type QaItem = {
-    id: string;
-    question: string;
-    answer?: string | null;
-    category?: string | null;
-    status?: "answered" | "unanswered" | string;
-    created_at?: string;
-    answered_at?: string | null;
-  };
   const [qaItems, setQaItems] = useState<QaItem[]>([]);
   const [qaLoading, setQaLoading] = useState(false);
   const [qaQuery, setQaQuery] = useState("");
-  const [qaFilter, setQaFilter] = useState<"all" | "answered" | "unanswered">(
-    "answered"
-  );
+  const [qaFilter, setQaFilter] = useState<"all" | "answered" | "unanswered">("answered");
 
-  const QA_SUBMIT_URL = `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/questions/submit`;
-  const QA_LIST_URL = `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/questions/list`;
-
-  // ✅ Threads / Posts (forums are coming soon)
+  // ✅ Forums state (coming soon)
   const [threads, setThreads] = useState<Thread[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [joinedCategoryIds, setJoinedCategoryIds] = useState<string[]>([]);
 
-  // ✅ Auto-load Q&A when browsing
+  // 🚨 Guard: if env is missing, tell dev immediately
   useEffect(() => {
-    if (qaMode === "browse") {
-      loadAnsweredQuestions();
+    if (!SUPABASE_URL) {
+      console.error("Missing NEXT_PUBLIC_SUPABASE_URL in env.");
+      toast.error("Config error: missing Supabase URL.");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-load Q&A when browsing or filter changes
+  useEffect(() => {
+    if (qaMode === "browse") loadAnsweredQuestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qaMode, qaFilter]);
 
@@ -149,31 +160,25 @@ export function CommunityScreen({
 
   const loadCommunityData = async () => {
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/community/data`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const response = await fetch(COMMUNITY_DATA_URL, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
-      if (response.ok) {
-        const data = await response.json();
-        const incomingCategories = data.categories ?? [];
-        setCategories(
-          incomingCategories.length > 0 ? incomingCategories : DEFAULT_CATEGORIES
-        );
-
-        setThreads(data.threads ?? []);
-        setPosts(data.posts ?? []);
-        setJoinedCategoryIds(data.joinedCategories ?? []);
-      } else {
+      if (!response.ok) {
         setCategories(DEFAULT_CATEGORIES);
         setThreads([]);
         setPosts([]);
         setJoinedCategoryIds([]);
+        return;
       }
+
+      const data = await response.json().catch(() => ({}));
+
+      const incomingCategories = data.categories ?? [];
+      setCategories(incomingCategories.length > 0 ? incomingCategories : DEFAULT_CATEGORIES);
+      setThreads(data.threads ?? []);
+      setPosts(data.posts ?? []);
+      setJoinedCategoryIds(data.joinedCategories ?? []);
     } catch (error) {
       console.error("Error loading community data:", error);
       setCategories(DEFAULT_CATEGORIES);
@@ -186,25 +191,21 @@ export function CommunityScreen({
   const isMember = (categoryId: string) => joinedCategoryIds.includes(categoryId);
 
   const joinCommunity = async (categoryId: string) => {
-    setJoinedCategoryIds((prev) =>
-      prev.includes(categoryId) ? prev : [...prev, categoryId]
-    );
+    setJoinedCategoryIds((prev) => (prev.includes(categoryId) ? prev : [...prev, categoryId]));
 
     try {
-      await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/community/join`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ categoryId, join: true }),
-        }
-      );
+      await fetch(COMMUNITY_JOIN_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ categoryId, join: true }),
+      });
       toast.success("Joined community!");
     } catch (error) {
       console.error("Error joining community:", error);
+      toast.error("Could not join community.");
     }
   };
 
@@ -212,20 +213,18 @@ export function CommunityScreen({
     setJoinedCategoryIds((prev) => prev.filter((id) => id !== categoryId));
 
     try {
-      await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/community/join`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ categoryId, join: false }),
-        }
-      );
+      await fetch(COMMUNITY_JOIN_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ categoryId, join: false }),
+      });
       toast.success("Left community");
     } catch (error) {
       console.error("Error leaving community:", error);
+      toast.error("Could not leave community.");
     }
   };
 
@@ -239,38 +238,34 @@ export function CommunityScreen({
     }
 
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/community/create`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title,
-            description,
-            icon: newCommunityIcon,
-          }),
-        }
-      );
+      const response = await fetch(COMMUNITY_CREATE_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title, description, icon: newCommunityIcon }),
+      });
 
-      if (response.ok) {
-        const data = await response.json();
-        setCategories((prev) => [data.category, ...prev]);
-        setNewCommunityTitle("");
-        setNewCommunityDescription("");
-        setNewCommunityIcon("💬");
-        setCreatingCommunity(false);
-        toast.success("Community created!");
+      if (!response.ok) {
+        toast.error("Failed to create community");
+        return;
       }
+
+      const data = await response.json().catch(() => ({}));
+      if (data?.category) setCategories((prev) => [data.category, ...prev]);
+
+      setNewCommunityTitle("");
+      setNewCommunityDescription("");
+      setNewCommunityIcon("💬");
+      setCreatingCommunity(false);
+      toast.success("Community created!");
     } catch (error) {
       console.error("Error creating community:", error);
       toast.error("Failed to create community");
     }
   };
 
-  // ✅ Q&A submit
   const submitAnonymousQuestion = async () => {
     const q = qaQuestion.trim();
     if (!q) return toast.error("Please type your question.");
@@ -291,16 +286,16 @@ export function CommunityScreen({
       });
 
       const data = await res.json().catch(() => ({}));
-
       if (!res.ok) {
-        return toast.error(data?.error || "Failed to submit question.");
+        toast.error(data?.error || "Failed to submit question.");
+        return;
       }
 
-      toast.success("Question submitted! Showing answered questions.");
+      toast.success("Question submitted! You can view answers in Browse.");
       setQaQuestion("");
       setQaCategory("general");
 
-      // ✅ Better UX: send user to answers view
+      // ✅ Send them straight to where answers will appear
       setQaMode("browse");
     } catch (e) {
       console.error("submitAnonymousQuestion error:", e);
@@ -310,7 +305,6 @@ export function CommunityScreen({
     }
   };
 
-  // ✅ Q&A list
   const loadAnsweredQuestions = async () => {
     setQaLoading(true);
     try {
@@ -325,7 +319,8 @@ export function CommunityScreen({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setQaItems([]);
-        return toast.error(data?.error || "Failed to load questions.");
+        toast.error(data?.error || "Failed to load questions.");
+        return;
       }
 
       setQaItems(Array.isArray(data?.items) ? data.items : []);
@@ -337,14 +332,13 @@ export function CommunityScreen({
     }
   };
 
-  // ✅ Forum helpers (kept for later, but forums are coming soon)
+  // Forums (kept for later)
   const [newThreadTitle, setNewThreadTitle] = useState("");
   const [creatingThread, setCreatingThread] = useState(false);
   const [newPostText, setNewPostText] = useState("");
 
   const selectedCategory = categories.find((c) => c.id === selectedCategoryId) || null;
   const selectedThread = threads.find((t) => t.id === selectedThreadId) || null;
-
   const threadCategoryId = selectedThread?.categoryId ?? null;
 
   const threadsInCategory = useMemo(() => {
@@ -446,7 +440,7 @@ export function CommunityScreen({
           </div>
         </div>
 
-        {/* ✅ LIVE: Community Q&A entry card */}
+        {/* ✅ LIVE: Community Q&A */}
         <Card className="p-4 bg-white">
           <h3 className="font-semibold" style={{ color: "#594F62" }}>
             Community Q&A (Live)
@@ -622,10 +616,7 @@ export function CommunityScreen({
                     </p>
 
                     {item.answer ? (
-                      <div
-                        className="mt-3 p-3 rounded-md"
-                        style={{ backgroundColor: "#F4F0FF" }}
-                      >
+                      <div className="mt-3 p-3 rounded-md" style={{ backgroundColor: "#F4F0FF" }}>
                         <p className="text-xs font-semibold" style={{ color: "#776B7D" }}>
                           Answer
                         </p>
@@ -649,7 +640,7 @@ export function CommunityScreen({
           </div>
         )}
 
-        {/* ✅ Forums = Coming soon (disabled) */}
+        {/* ✅ Forums = Coming soon */}
         {!selectedCategoryId && !selectedThreadId && qaMode === "home" && (
           <div className="mt-4 space-y-4">
             <Card className="p-4 bg-white">
@@ -665,6 +656,7 @@ export function CommunityScreen({
               <Card key={cat.id} className="p-4 bg-white opacity-60 cursor-not-allowed">
                 <div className="flex items-start justify-between gap-3">
                   <div className="text-2xl">{cat.icon}</div>
+
                   <div className="flex-1">
                     <h3 className="font-semibold" style={{ color: "#594F62" }}>
                       {cat.title}
@@ -688,10 +680,7 @@ export function CommunityScreen({
           </div>
         )}
 
-        {/* (Optional) Keep the old thread/post views for later.
-            They won't be reachable from home while forums are disabled,
-            but leaving them doesn't hurt for future rollout. */}
-
+        {/* (Forums thread/post UI kept for later rollout) */}
         {selectedCategoryId && !selectedThreadId && (
           <div className="space-y-3">
             {!creatingThread &&
@@ -827,8 +816,8 @@ export function CommunityScreen({
                 </Button>
 
                 <p className="text-xs" style={{ color: "#9A92AB" }}>
-                  Reminder: be kind. If you feel unsafe or have severe symptoms, please
-                  seek medical help.
+                  Reminder: be kind. If you feel unsafe or have severe symptoms, please seek
+                  medical help.
                 </p>
               </Card>
             ) : (
@@ -843,6 +832,11 @@ export function CommunityScreen({
             )}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
       </div>
     </div>
   );
