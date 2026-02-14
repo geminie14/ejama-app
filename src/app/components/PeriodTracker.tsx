@@ -16,13 +16,7 @@ interface PeriodTrackerProps {
   accessToken: string;
 }
 
-function toYYYYMMDD(d: Date) {
-  // local date -> YYYY-MM-DD
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
+const toDateOnly = (d: Date) => d.toISOString().slice(0, 10); // "YYYY-MM-DD"
 
 export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
@@ -33,69 +27,76 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
   const PERIOD_TRACKING_ENDPOINT = `${supabaseUrl}/functions/v1/make-server-1aee76a8/period-tracking`;
 
   useEffect(() => {
+    if (!accessToken) return;
     loadTrackingData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [accessToken]);
 
   const loadTrackingData = async () => {
     try {
-      const response = await fetch(PERIOD_TRACKING_ENDPOINT, {
+      const res = await fetch(PERIOD_TRACKING_ENDPOINT, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
-      if (!response.ok) return;
+      const json = await res.json().catch(() => ({}));
 
-      const result = await response.json().catch(() => ({}));
-      const data = result?.data;
+      if (!res.ok) {
+        // helpful debug
+        console.error("loadTrackingData failed:", res.status, json);
+        return;
+      }
 
-      if (data?.selectedDates?.length >= 2) {
+      const data = json?.data;
+
+      if (data?.start_date && data?.end_date) {
         setRange({
-          from: new Date(data.selectedDates[0]),
-          to: new Date(data.selectedDates[1]),
+          from: new Date(data.start_date),
+          to: new Date(data.end_date),
         });
       }
 
-      if (data?.cycleLength) setCycleLength(String(data.cycleLength));
-      if (data?.periodLength) setPeriodLength(String(data.periodLength));
-    } catch (error) {
-      console.error("Error loading tracking data:", error);
+      if (data?.cycle_length) setCycleLength(String(data.cycle_length));
+      if (data?.period_length) setPeriodLength(String(data.period_length));
+    } catch (e) {
+      console.error("Error loading tracking data:", e);
     }
   };
 
   const handleSave = async () => {
-    if (!range?.from || !range?.to) {
-      toast.error("Please select the start and end date of your period.");
-      return;
-    }
+    if (!accessToken) return toast.error("Missing session. Please login again.");
+    if (!range?.from || !range?.to)
+      return toast.error("Please select the start and end date of your period.");
 
     setLoading(true);
 
     try {
-      const response = await fetch(PERIOD_TRACKING_ENDPOINT, {
+      const res = await fetch(PERIOD_TRACKING_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          selectedDates: [toYYYYMMDD(range.from), toYYYYMMDD(range.to)],
-          cycleLength: Number(cycleLength),
-          periodLength: Number(periodLength),
+          start_date: toDateOnly(range.from),
+          end_date: toDateOnly(range.to),
+          cycle_length: Number(cycleLength),
+          period_length: Number(periodLength),
         }),
       });
 
-      if (response.ok) {
-        toast.success("Tracking data saved successfully!");
-        return;
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error("handleSave failed:", res.status, json);
+        return toast.error(json?.error || "Failed to save tracking data");
       }
 
-      const err = await response.json().catch(() => ({}));
-      toast.error(err?.error || "Failed to save tracking data");
-    } catch (error) {
-      console.error("Error saving tracking data:", error);
+      toast.success("Tracking data saved successfully!");
+    } catch (e) {
+      console.error("Network error saving tracking data:", e);
       toast.error("Network error. Please try again.");
     } finally {
       setLoading(false);
@@ -143,7 +144,6 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
                       numberOfMonths={1}
                       className="rounded-md border"
                     />
-
                     <p className="mt-2 text-xs text-gray-500 text-center">
                       {range?.from && range?.to
                         ? `Selected: ${range.from.toDateString()} - ${range.to.toDateString()}`
@@ -199,10 +199,7 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
               </div>
             </Card>
 
-            <Card
-              className="p-4 border"
-              style={{ backgroundColor: "#D4C4EC", borderColor: "#B2A0B9" }}
-            >
+            <Card className="p-4 border" style={{ backgroundColor: "#D4C4EC", borderColor: "#B2A0B9" }}>
               <h3 className="text-lg font-semibold mb-3" style={{ color: "#594F62" }}>
                 Tracking Tips
               </h3>
