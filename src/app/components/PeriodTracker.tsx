@@ -16,23 +16,31 @@ interface PeriodTrackerProps {
   accessToken: string;
 }
 
+function toYYYYMMDD(d: Date) {
+  // local date -> YYYY-MM-DD
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [cycleLength, setCycleLength] = useState("28");
   const [periodLength, setPeriodLength] = useState("5");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-  if (!accessToken) return;
-  loadTrackingData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [accessToken]);
-
   const PERIOD_TRACKING_ENDPOINT = `${supabaseUrl}/functions/v1/make-server-1aee76a8/period-tracking`;
+
+  useEffect(() => {
+    loadTrackingData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadTrackingData = async () => {
     try {
       const response = await fetch(PERIOD_TRACKING_ENDPOINT, {
+        method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -40,32 +48,29 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
 
       if (!response.ok) return;
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
+      const data = result?.data;
 
-      if (result?.data?.selectedDates?.length >= 2) {
+      if (data?.selectedDates?.length >= 2) {
         setRange({
-          from: new Date(result.data.selectedDates[0]),
-          to: new Date(result.data.selectedDates[1]),
+          from: new Date(data.selectedDates[0]),
+          to: new Date(data.selectedDates[1]),
         });
       }
 
-      if (result?.data?.cycleLength) {
-        setCycleLength(String(result.data.cycleLength));
-      }
-
-      if (result?.data?.periodLength) {
-        setPeriodLength(String(result.data.periodLength));
-      }
+      if (data?.cycleLength) setCycleLength(String(data.cycleLength));
+      if (data?.periodLength) setPeriodLength(String(data.periodLength));
     } catch (error) {
-      console.error(
-        "Error loading tracking data (network issue or server not deployed):",
-        error
-      );
-      // Silently fail on initial load
+      console.error("Error loading tracking data:", error);
     }
   };
 
   const handleSave = async () => {
+    if (!range?.from || !range?.to) {
+      toast.error("Please select the start and end date of your period.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -76,30 +81,22 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          selectedDates:
-          range?.from && range?.to
-    ? [
-        range.from.toISOString().slice(0, 10),
-        range.to.toISOString().slice(0, 10),
-      ]
-    : [],
-          cycleLength,
-          periodLength,
+          selectedDates: [toYYYYMMDD(range.from), toYYYYMMDD(range.to)],
+          cycleLength: Number(cycleLength),
+          periodLength: Number(periodLength),
         }),
       });
 
       if (response.ok) {
         toast.success("Tracking data saved successfully!");
-      } else {
-        const err = await response.json().catch(() => ({}));
-        toast.error(err?.error || "Failed to save tracking data");
+        return;
       }
+
+      const err = await response.json().catch(() => ({}));
+      toast.error(err?.error || "Failed to save tracking data");
     } catch (error) {
-      console.error(
-        "Error saving tracking data (network issue or server not deployed):",
-        error
-      );
-      toast.error("Network error. Please check your connection and try again.");
+      console.error("Error saving tracking data:", error);
+      toast.error("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -132,10 +129,7 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <Card className="p-6 bg-white">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: "#594F62" }}
-              >
+              <h3 className="text-lg font-semibold mb-4" style={{ color: "#594F62" }}>
                 Mark Your Period Days
               </h3>
 
@@ -149,6 +143,7 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
                       numberOfMonths={1}
                       className="rounded-md border"
                     />
+
                     <p className="mt-2 text-xs text-gray-500 text-center">
                       {range?.from && range?.to
                         ? `Selected: ${range.from.toDateString()} - ${range.to.toDateString()}`
@@ -162,10 +157,7 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
 
           <div className="space-y-6">
             <Card className="p-6 bg-white">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: "#594F62" }}
-              >
+              <h3 className="text-lg font-semibold mb-4" style={{ color: "#594F62" }}>
                 Cycle Settings
               </h3>
 
@@ -211,47 +203,26 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
               className="p-4 border"
               style={{ backgroundColor: "#D4C4EC", borderColor: "#B2A0B9" }}
             >
-              <h3
-                className="text-lg font-semibold mb-3"
-                style={{ color: "#594F62" }}
-              >
+              <h3 className="text-lg font-semibold mb-3" style={{ color: "#594F62" }}>
                 Tracking Tips
               </h3>
 
               <ul className="space-y-1 text-sm" style={{ color: "#594F62" }}>
                 <li className="flex items-start">
-                  <span className="mr-2" style={{ color: "#A592AB" }}>
-                    •
-                  </span>
-                  <span>
-                    Mark the first day of your period each month for accurate
-                    predictions
-                  </span>
+                  <span className="mr-2" style={{ color: "#A592AB" }}>•</span>
+                  <span>Mark the first day of your period each month for accurate predictions</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="mr-2" style={{ color: "#A592AB" }}>
-                    •
-                  </span>
-                  <span>
-                    Track symptoms like cramps, mood changes, and energy levels
-                  </span>
+                  <span className="mr-2" style={{ color: "#A592AB" }}>•</span>
+                  <span>Track symptoms like cramps, mood changes, and energy levels</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="mr-2" style={{ color: "#A592AB" }}>
-                    •
-                  </span>
-                  <span>
-                    Be consistent with tracking to improve prediction accuracy
-                  </span>
+                  <span className="mr-2" style={{ color: "#A592AB" }}>•</span>
+                  <span>Be consistent with tracking to improve prediction accuracy</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="mr-2" style={{ color: "#A592AB" }}>
-                    •
-                  </span>
-                  <span>
-                    Consult a healthcare provider if you notice significant
-                    changes in your cycle
-                  </span>
+                  <span className="mr-2" style={{ color: "#A592AB" }}>•</span>
+                  <span>Consult a healthcare provider if you notice significant changes in your cycle</span>
                 </li>
               </ul>
             </Card>
