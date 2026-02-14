@@ -77,9 +77,12 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
         },
         body: JSON.stringify({
           selectedDates:
-            range?.from && range?.to
-              ? [range.from.toISOString(), range.to.toISOString()]
-              : [],
+          range?.from && range?.to
+    ? [
+        range.from.toISOString().slice(0, 10),
+        range.to.toISOString().slice(0, 10),
+      ]
+    : [],
           cycleLength,
           periodLength,
         }),
