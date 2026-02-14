@@ -13,11 +13,10 @@ import { HealthTipsScreen } from "@/app/components/HealthTipsScreen";
 import { FeedbackScreen } from "@/app/components/FeedbackScreen";
 import { SettingsScreen } from "@/app/components/SettingsScreen";
 import { ResetPasswordScreen } from "@/app/components/ResetPasswordScreen";
-import { Toaster } from "@/app/components/ui/sonner";
 import { AdminQuestionsScreen } from "@/app/components/AdminQuestionsScreen";
+import { Toaster } from "@/app/components/ui/sonner";
 import { getSupabaseClient } from "@/utils/supabase/client";
 
-// ✅ UPDATED: include all screens you actually use in renderScreen()
 type Screen =
   | "welcome"
   | "home"
@@ -25,48 +24,34 @@ type Screen =
   | "products"
   | "education"
   | "community"
+  | "ask-question"
   | "ask-expert"
   | "tracker"
   | "health-tips"
   | "feedback"
   | "settings"
   | "reset-password"
-  | "ask-question"
   | "admin-questions";
 
 type AuthMode = "signup" | "login" | "reset";
 
-// ✅ helper: read Community Q&A mode from URL (?qa=ask|browse)
-const getQaModeFromUrl = (): "home" | "ask" | "browse" => {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const qa = params.get("qa");
-    if (qa === "ask") return "ask";
-    if (qa === "browse") return "browse";
-    return "home";
-  } catch {
-    return "home";
-  }
-};
-
-// ✅ helper: keep URL in sync (optional but makes behavior consistent)
-const setUrlScreen = (screen: Screen, qa?: "ask" | "browse") => {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    params.set("screen", screen);
-
-    if (screen === "community" && qa) params.set("qa", qa);
-    else params.delete("qa");
-
-    const next = `/?${params.toString()}`;
-    window.history.pushState({}, "", next);
-  } catch {
-    // ignore
-  }
-};
-
 export default function App() {
   const SCREEN_KEY = "ejama_current_screen";
+
+  const allowedScreens: Screen[] = [
+    "home",
+    "locator",
+    "products",
+    "education",
+    "community",
+    "ask-question",
+    "ask-expert",
+    "tracker",
+    "health-tips",
+    "feedback",
+    "settings",
+    "admin-questions",
+  ];
 
   const saveScreen = (screen: Screen) => {
     localStorage.setItem(SCREEN_KEY, screen);
@@ -76,52 +61,17 @@ export default function App() {
     return localStorage.getItem(SCREEN_KEY) as Screen | null;
   };
 
-  // ✅ UPDATED: include all valid screens (except welcome/reset-password which you handle separately)
-  const allowedScreens: Screen[] = [
-    "home",
-    "locator",
-    "products",
-    "education",
-    "community",
-    "ask-expert",
-    "tracker",
-    "health-tips",
-    "feedback",
-    "settings",
-    "ask-question",
-    "admin-questions",
-  ];
-
   const [currentScreen, setCurrentScreen] = useState<Screen>("welcome");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("signup");
-  const [accessToken, setAccessToken] = useState<string>("");
+  const [accessToken, setAccessToken] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName, setUserName] = useState<string>("");
+  const [userName, setUserName] = useState("");
   const [userAvatar, setUserAvatar] = useState("");
-  const [userEmail, setUserEmail] = useState<string>("");
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     checkSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (sessionStorage.getItem("ejama_temp_session") === "1") {
-        const supabase = getSupabaseClient();
-        await supabase.auth.signOut();
-
-        sessionStorage.removeItem("ejama_temp_session");
-        localStorage.removeItem(SCREEN_KEY);
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
   }, []);
 
   const checkSession = async () => {
@@ -145,7 +95,6 @@ export default function App() {
           "there";
 
         const avatar =
-          user.user_metadata?.profile_picture ||
           user.user_metadata?.avatar_url ||
           user.user_metadata?.picture ||
           "";
@@ -154,11 +103,9 @@ export default function App() {
         setUserAvatar(avatar);
 
         const saved = loadSavedScreen();
-        const next =
-          saved && allowedScreens.includes(saved) ? saved : "home";
-
-        setCurrentScreen(next);
-        setUrlScreen(next); // ✅ keeps URL consistent
+        setCurrentScreen(
+          saved && allowedScreens.includes(saved) ? saved : "home"
+        );
       }
     } catch (error) {
       console.error("Session check error:", error);
@@ -200,7 +147,6 @@ export default function App() {
           "there";
 
         const avatar =
-          user.user_metadata?.profile_picture ||
           user.user_metadata?.avatar_url ||
           user.user_metadata?.picture ||
           "";
@@ -214,12 +160,9 @@ export default function App() {
     }
 
     const saved = loadSavedScreen();
-    const next =
-      saved && allowedScreens.includes(saved) ? saved : "home";
-
-    setCurrentScreen(next);
-    saveScreen(next);
-    setUrlScreen(next);
+    setCurrentScreen(
+      saved && allowedScreens.includes(saved) ? saved : "home"
+    );
 
     setAuthDialogOpen(false);
   };
@@ -236,37 +179,17 @@ export default function App() {
     setUserAvatar("");
     setUserEmail("");
     setCurrentScreen("welcome");
-
-    // Optional: clear URL
-    try {
-      window.history.pushState({}, "", "/");
-    } catch {}
   };
 
-  // ✅ UPDATED: keep Screen typing + URL sync.
-  const handleNavigate = (screen: string) => {
-    const next = screen as Screen;
-
-    if (!allowedScreens.includes(next)) return;
-
-    setCurrentScreen(next);
-    saveScreen(next);
-
-    // If Homepage set ?qa=ask before calling onNavigate("community"),
-    // we keep it. Otherwise, we clear qa when leaving community.
-    if (next === "community") {
-      const qa = new URLSearchParams(window.location.search).get("qa");
-      if (qa === "ask" || qa === "browse") setUrlScreen(next, qa);
-      else setUrlScreen(next);
-    } else {
-      setUrlScreen(next);
-    }
+  const handleNavigate = (screen: Screen) => {
+    if (!allowedScreens.includes(screen)) return;
+    setCurrentScreen(screen);
+    saveScreen(screen);
   };
 
   const handleBack = () => {
     setCurrentScreen("home");
     saveScreen("home");
-    setUrlScreen("home");
   };
 
   const renderScreen = () => {
@@ -289,11 +212,6 @@ export default function App() {
           />
         );
 
-      case "ask-question":
-        return (
-          <AskQuestionScreen onBack={handleBack} accessToken={accessToken} />
-        );
-
       case "products":
         return (
           <ProductsScreen
@@ -306,26 +224,49 @@ export default function App() {
         return <ProductLocator onBack={handleBack} />;
 
       case "education":
-        return <EducationScreen onBack={handleBack} accessToken={accessToken} />;
+        return (
+          <EducationScreen onBack={handleBack} accessToken={accessToken} />
+        );
 
       case "community":
         return (
           <CommunityScreen
             onBack={handleBack}
             accessToken={accessToken}
-            // ✅ THIS is where answers are viewed: Community → Browse Answered Questions
-            initialQaMode={getQaModeFromUrl()}
+          />
+        );
+
+      case "ask-question":
+        return (
+          <AskQuestionScreen
+            onBack={handleBack}
+            accessToken={accessToken}
           />
         );
 
       case "ask-expert":
-        return <AskExpertScreen onBack={handleBack} accessToken={accessToken} />;
+        return (
+          <AskExpertScreen
+            onBack={handleBack}
+            accessToken={accessToken}
+          />
+        );
 
       case "tracker":
-        return <PeriodTracker onBack={handleBack} accessToken={accessToken} />;
+        return (
+          <PeriodTracker
+            onBack={handleBack}
+            accessToken={accessToken}
+          />
+        );
 
       case "health-tips":
-        return <HealthTipsScreen onBack={handleBack} accessToken={accessToken} />;
+        return (
+          <HealthTipsScreen
+            onBack={handleBack}
+            accessToken={accessToken}
+          />
+        );
 
       case "feedback":
         return <FeedbackScreen onBack={handleBack} />;
@@ -339,13 +280,16 @@ export default function App() {
             userName={userName}
             userAvatar={userAvatar}
             userEmail={userEmail}
-            onNavigate={(s) => handleNavigate(s)}
+            onNavigate={(s) => handleNavigate(s as Screen)}
           />
         );
 
       case "admin-questions":
         return (
-          <AdminQuestionsScreen onBack={handleBack} accessToken={accessToken} />
+          <AdminQuestionsScreen
+            onBack={handleBack}
+            accessToken={accessToken}
+          />
         );
 
       case "reset-password":
