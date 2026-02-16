@@ -1,5 +1,3 @@
-import { supabaseUrl, supabaseAnonKey } from "@/utils/supabase/info";
-
 const viteEnv =
   typeof import.meta !== "undefined" ? (import.meta as any).env : undefined;
 
