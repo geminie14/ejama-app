@@ -8,9 +8,8 @@ import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Calendar } from "@/app/components/ui/calendar";
 import { toast } from "sonner";
-import { supabaseUrl } from "@/utils/supabase/info";
+import { supabaseUrl, supabaseAnonKey } from "@/utils/supabase/info";
 import type { DateRange } from "react-day-picker";
-
 interface PeriodTrackerProps {
   onBack: () => void;
   accessToken: string;
@@ -38,6 +37,7 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          apikey: supabaseAnonKey,
         },
       });
 
@@ -51,15 +51,15 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
 
       const data = json?.data;
 
-      if (data?.start_date && data?.end_date) {
-        setRange({
-          from: new Date(data.start_date),
-          to: new Date(data.end_date),
-        });
-      }
+if (data?.selectedDates?.length === 2) {
+  setRange({
+    from: new Date(data.selectedDates[0]),
+    to: new Date(data.selectedDates[1]),
+  });
+}
 
-      if (data?.cycle_length) setCycleLength(String(data.cycle_length));
-      if (data?.period_length) setPeriodLength(String(data.period_length));
+if (data?.cycleLength) setCycleLength(String(data.cycleLength));
+if (data?.periodLength) setPeriodLength(String(data.periodLength));
     } catch (e) {
       console.error("Error loading tracking data:", e);
     }
@@ -78,13 +78,13 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
+          apikey: supabaseAnonKey,
         },
-        body: JSON.stringify({
-          start_date: toDateOnly(range.from),
-          end_date: toDateOnly(range.to),
-          cycle_length: Number(cycleLength),
-          period_length: Number(periodLength),
-        }),
+       body: JSON.stringify({
+  selectedDates: [toDateOnly(range.from), toDateOnly(range.to)],
+  cycleLength: Number(cycleLength),
+  periodLength: Number(periodLength),
+}),
       });
 
       const json = await res.json().catch(() => ({}));
