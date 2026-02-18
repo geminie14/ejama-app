@@ -8,7 +8,7 @@ import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Calendar } from "@/app/components/ui/calendar";
 import { toast } from "sonner";
-import { supabaseAnonKey } from "@/utils/supabase/info";
+import { supabaseUrl, supabaseAnonKey } from "@/utils/supabase/info";
 import type { DateRange } from "react-day-picker";
 interface PeriodTrackerProps {
   onBack: () => void;
@@ -23,7 +23,7 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
   const [periodLength, setPeriodLength] = useState("5");
   const [loading, setLoading] = useState(false);
 
-  const PERIOD_TRACKING_ENDPOINT = `${supabaseUrl}/functions/v1/make-server-1aee76a8/period-tracking`;
+  const PERIOD_TRACKING_ENDPOINT = `${supabaseUrl}/functions/v1/period-tracking`;
 
   useEffect(() => {
     if (!accessToken) return;
