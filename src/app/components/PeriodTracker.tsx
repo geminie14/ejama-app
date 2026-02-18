@@ -23,8 +23,9 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
   const [periodLength, setPeriodLength] = useState("5");
   const [loading, setLoading] = useState(false);
 
-  const PERIOD_TRACKING_ENDPOINT = `${supabaseUrl}/functions/v1/period-tracking`;
-
+  const PERIOD_TRACKING_ENDPOINT =
+  "https://qcljtqizujwxmxqrogkg.supabase.co/functions/v1/period-tracking";
+  
   useEffect(() => {
     if (!accessToken) return;
     loadTrackingData();
