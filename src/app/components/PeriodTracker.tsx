@@ -8,7 +8,7 @@ import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Calendar } from "@/app/components/ui/calendar";
 import { toast } from "sonner";
-import { supabaseUrl, supabaseAnonKey } from "@/utils/supabase/info";
+import { supabaseAnonKey } from "@/utils/supabase/info";
 import type { DateRange } from "react-day-picker";
 interface PeriodTrackerProps {
   onBack: () => void;
@@ -32,76 +32,72 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
   }, [accessToken]);
 
   const loadTrackingData = async () => {
-    try {
-      const res = await fetch(PERIOD_TRACKING_ENDPOINT, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          apikey: supabaseAnonKey,
-        },
-      });
+  try {
+    const res = await fetch(PERIOD_TRACKING_ENDPOINT, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        apikey: supabaseAnonKey,
+      },
+    });
 
-      const json = await res.json().catch(() => ({}));
+    const json = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        // helpful debug
-        console.error("loadTrackingData failed:", res.status, json);
-        return;
-      }
-
-      const data = json?.data;
-
-if (data?.selectedDates?.length === 2) {
-  setRange({
-    from: new Date(data.selectedDates[0]),
-    to: new Date(data.selectedDates[1]),
-  });
-}
-
-if (data?.cycleLength) setCycleLength(String(data.cycleLength));
-if (data?.periodLength) setPeriodLength(String(data.periodLength));
-    } catch (e) {
-      console.error("Error loading tracking data:", e);
+    if (!res.ok) {
+      console.error("loadTrackingData failed:", res.status, json);
+      return;
     }
-  };
 
-  const handleSave = async () => {
-    if (!accessToken) return toast.error("Missing session. Please login again.");
-    if (!range?.from || !range?.to)
-      return toast.error("Please select the start and end date of your period.");
+    const data = json?.data;
 
-    setLoading(true);
-
-    try {
-      const res = await fetch(PERIOD_TRACKING_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-          apikey: supabaseAnonKey,
-        },
-       body: JSON.stringify({
-  selectedDates: [toDateOnly(range.from), toDateOnly(range.to)],
-  cycleLength: Number(cycleLength),
-  periodLength: Number(periodLength),
-}),
-      });
-
-      const json = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        console.error("handleSave failed:", res.status, json);
-        return toast.error(json?.error || "Failed to save tracking data");
-      }
-
-      toast.success("Tracking data saved successfully!");
-    } catch (e) {
-      console.error("Network error saving tracking data:", e);
-      toast.error("Network error. Please try again.");
-    } finally {
-      setLoading(false);
+    if (data?.start_date && data?.end_date) {
+      setRange({ from: new Date(data.start_date), to: new Date(data.end_date) });
     }
-  };
+    if (data?.cycle_length) setCycleLength(String(data.cycle_length));
+    if (data?.period_length) setPeriodLength(String(data.period_length));
+  } catch (e) {
+    console.error("Error loading tracking data:", e);
+  }
+};
+
+const handleSave = async () => {
+  if (!accessToken) return toast.error("Missing session. Please login again.");
+  if (!range?.from || !range?.to)
+    return toast.error("Please select the start and end date of your period.");
+
+  setLoading(true);
+
+  try {
+    const res = await fetch(PERIOD_TRACKING_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        apikey: supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        start_date: toDateOnly(range.from),
+        end_date: toDateOnly(range.to),
+        cycle_length: Number(cycleLength),
+        period_length: Number(periodLength),
+      }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      console.error("handleSave failed:", res.status, json);
+      return toast.error(json?.error || "Failed to save tracking data");
+    }
+
+    toast.success("Tracking data saved successfully!");
+  } catch (e) {
+    console.error("Network error saving tracking data:", e);
+    toast.error("Network error. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#E7DDFF] p-4">
