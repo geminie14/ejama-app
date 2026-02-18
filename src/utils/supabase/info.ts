@@ -1,7 +1,17 @@
-// utils/supabase/info.ts
+// src/utils/supabase/info.ts
 
-export const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
-export const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+const viteEnv =
+  typeof import.meta !== "undefined" ? (import.meta as any).env : undefined;
+
+export const supabaseUrl =
+  (viteEnv?.VITE_SUPABASE_URL as string | undefined) ??
+  (process.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined) ??
+  "";
+
+export const supabaseAnonKey =
+  (viteEnv?.VITE_SUPABASE_ANON_KEY as string | undefined) ??
+  (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string | undefined) ??
+  "";
 
 if (typeof window !== "undefined") {
   console.log("SUPABASE URL:", supabaseUrl);
@@ -10,11 +20,10 @@ if (typeof window !== "undefined") {
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn(
-    "[Supabase] Missing env vars. Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in Vercel and redeploy."
+    "[Supabase] Missing env vars. Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or NEXT_PUBLIC_...) are set."
   );
 }
 
-if (supabaseUrl && !supabaseUrl.startsWith("https://") && !supabaseUrl.startsWith("http://")) {
-  console.warn("[Supabase] NEXT_PUBLIC_SUPABASE_URL must start with https://");
+if (supabaseUrl && !/^https?:\/\//.test(supabaseUrl)) {
+  console.warn("[Supabase] Supabase URL must start with https://");
 }
-
