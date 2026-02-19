@@ -23,14 +23,7 @@ export function PeriodTracker({ onBack, accessToken }: PeriodTrackerProps) {
   const [periodLength, setPeriodLength] = useState("5");
   const [loading, setLoading] = useState(false);
 
-   console.log(
-    "accessToken exists:",
-    Boolean(accessToken),
-    "len:",
-    accessToken?.length
-  );
-
-  const PERIOD_TRACKING_ENDPOINT =
+     const PERIOD_TRACKING_ENDPOINT =
   "https://qcljtqizujwxmxqrogkg.supabase.co/functions/v1/make-server-1aee76a8/period-tracking";
   
   useEffect(() => {
