@@ -15,6 +15,7 @@ import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Label } from "@/app/components/ui/label";
 import { toast } from "sonner";
+import { supabaseUrl } from "@/utils/supabase/info";
 
 interface CommunityScreenProps {
   onBack: () => void;
@@ -104,8 +105,8 @@ export function CommunityScreen({
    * We DO NOT import `projectId` anymore (your build error).
    * We build Edge Function URLs from NEXT_PUBLIC_SUPABASE_URL.
    */
-  const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "");
-  const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
+  const SUPABASE_URL = (supabaseUrl || "").replace(/\/$/, "");
+const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
 
   const QA_SUBMIT_URL = `${FUNCTIONS_BASE}/questions/submit`;
   const QA_LIST_URL = `${FUNCTIONS_BASE}/questions/list`;
