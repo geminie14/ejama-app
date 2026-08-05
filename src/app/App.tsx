@@ -267,8 +267,14 @@ export default function App() {
   const renderScreen = () => {
     switch (currentScreen) {
       case "welcome":
-        return <WelcomeScreen onSignUp={handleSignUpClick} onLogin={handleLoginClick} />;
-
+  return (
+    <WelcomeScreen
+      onSignUp={handleSignUpClick}
+      onLogin={handleLoginClick}
+      onBrowse={handleBrowseClick}
+    />
+  );
+        
       case "home":
         return (
           <Homepage
