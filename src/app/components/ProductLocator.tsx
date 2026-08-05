@@ -128,6 +128,20 @@ export function ProductLocator({ onBack }: ProductLocatorProps) {
           <p style={{ color: '#776B7D' }}>Find menstrual products near you</p>
         </div>
 
+        <Card className="p-4 mb-6 bg-white border-2" style={{ borderColor: '#F5A623', backgroundColor: '#FFF9E6' }}>
+  <div className="flex items-start gap-3">
+    <span className="text-xl">⚠️</span>
+    <div>
+      <p className="font-semibold" style={{ color: '#8B7000' }}>
+        Demo data — not yet live
+      </p>
+      <p className="text-sm mt-1" style={{ color: '#8B7000' }}>
+        These store listings are placeholders for testing. Names, addresses, and phone
+        numbers are not real. Real nearby-store search is coming soon.
+      </p>
+    </div>
+  </div>
+</Card>
         <Card className="p-6 bg-white mb-6">
           <div className="flex gap-3">
             <div className="flex-1">
@@ -216,13 +230,14 @@ export function ProductLocator({ onBack }: ProductLocatorProps) {
                 </Button>
 
                 <Button
-                  variant="outline"
-                  className="flex-1"
-                  style={{ borderColor: "#A592AB", color: "#A592AB" }}
-                  onClick={() => window.open(`tel:${store.phone.replace(/\s/g, "")}`)}
-                >
-                  Call Store
-                </Button>
+  variant="outline"
+  className="flex-1"
+  disabled
+  style={{ borderColor: "#D4C4EC", color: "#B2A0B9" }}
+  title="Demo data — calling disabled"
+>
+  Call Store (Demo)
+</Button>
               </div>
             </Card>
           ))}
