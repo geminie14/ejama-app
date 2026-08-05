@@ -48,7 +48,8 @@ export default function App() {
 
         const name = session.user?.user_metadata?.name || "there";
         setUserName(name);
-
+        
+      if (window.location.pathname !== "/reset-password") {
         setCurrentScreen("home");
       }
     } catch (error) {
