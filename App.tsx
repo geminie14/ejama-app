@@ -30,6 +30,12 @@ export default function App() {
     checkSession();
   }, []);
 
+  useEffect(() => {
+  if (window.location.pathname === "/reset-password") {
+    setCurrentScreen("reset-password");
+  }
+}, []);
+  
   const checkSession = async () => {
     try {
       const supabase = getSupabaseClient();
