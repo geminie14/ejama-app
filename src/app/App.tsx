@@ -16,6 +16,7 @@ import { ResetPasswordScreen } from "@/app/components/ResetPasswordScreen";
 import { Toaster } from "@/app/components/ui/sonner";
 import { AdminQuestionsScreen } from "@/app/components/AdminQuestionsScreen";
 import { getSupabaseClient } from "@/utils/supabase/client";
+import { AuthGate } from "@/app/components/AuthGate";
 
 type Screen =
   | "welcome"
@@ -173,6 +174,10 @@ export default function App() {
     setAuthDialogOpen(true);
   };
 
+  const handleBrowseClick = () => {
+  setCurrentScreen("home");
+};
+
   const handleForgotPasswordClick = () => {
     setAuthDialogOpen(false);
     setCurrentScreen("reset-password");
@@ -242,20 +247,19 @@ export default function App() {
   };
 
   // ✅ Small helper so we don't call protected screens without a token
-  const requireToken = (component: React.ReactNode) => {
-    if (!isAuthenticated || !accessToken) {
-      // If user is logged in but token is still loading, avoid firing requests with Bearer ""
-      return (
-        <Homepage
-          onNavigate={handleNavigate}
-          userName={userName}
-          userAvatar={userAvatar}
-          onLogout={handleLogout}
-        />
-      );
-    }
-    return component;
-  };
+  const requireToken = (component: React.ReactNode, feature: string) => {
+  if (!isAuthenticated || !accessToken) {
+    return (
+      <AuthGate
+        onBack={handleBack}
+        onSignUp={handleSignUpClick}
+        onLogin={handleLoginClick}
+        feature={feature}
+      />
+    );
+  }
+  return component;
+};
 
   const renderScreen = () => {
     switch (currentScreen) {
@@ -282,50 +286,31 @@ export default function App() {
         return <ProductLocator onBack={handleBack} />;
 
       case "education":
-        return requireToken(<EducationScreen onBack={handleBack} accessToken={accessToken} />);
+  return <EducationScreen onBack={handleBack} accessToken={accessToken} />;
 
-      case "community":
-        return requireToken(<CommunityScreen onBack={handleBack} accessToken={accessToken} />);
+case "community":
+  return <CommunityScreen onBack={handleBack} accessToken={accessToken} />;
 
-      case "ask-expert":
-        return requireToken(<AskExpertScreen onBack={handleBack} accessToken={accessToken} />);
+case "ask-expert":
+  return <AskExpertScreen onBack={handleBack} accessToken={accessToken} />;
 
-      case "tracker":
-        // ✅ This is the key fix: PeriodTracker will ONLY mount with a valid token
-        return requireToken(<PeriodTracker onBack={handleBack} accessToken={accessToken} />);
+case "tracker":
+  return requireToken(
+    <PeriodTracker onBack={handleBack} accessToken={accessToken} />,
+    "track your cycle"
+  );
 
-      case "health-tips":
-        return requireToken(<HealthTipsScreen onBack={handleBack} accessToken={accessToken} />);
+case "ask-question":
+  return requireToken(
+    <AskQuestionScreen onBack={handleBack} accessToken={accessToken} />,
+    "ask a question"
+  );
 
-      case "feedback":
-        return <FeedbackScreen onBack={handleBack} />;
-
-      case "settings":
-        return (
-          <SettingsScreen
-            onBack={handleBack}
-            onLogout={handleLogout}
-            accessToken={accessToken}
-            userName={userName}
-            userAvatar={userAvatar}
-            userEmail={userEmail}
-            onNavigate={(s) => handleNavigate(s as Screen)}
-          />
-        );
-
-      case "admin-questions":
-        return requireToken(<AdminQuestionsScreen onBack={handleBack} accessToken={accessToken} />);
-
-      case "reset-password":
-        return (
-          <ResetPasswordScreen
-            onDone={() => {
-              setCurrentScreen("welcome");
-              setAuthMode("login");
-              setAuthDialogOpen(true);
-            }}
-          />
-        );
+case "admin-questions":
+  return requireToken(
+    <AdminQuestionsScreen onBack={handleBack} accessToken={accessToken} />,
+    "access admin tools"
+  );
 
       default:
         return (
