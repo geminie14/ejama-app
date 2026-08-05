@@ -142,6 +142,9 @@ export default function App() {
         setUserEmail("");
         setCurrentScreen("welcome");
         localStorage.removeItem(SCREEN_KEY);
+
+        if (event === "SIGNED_OUT") {
+      setCurrentScreen("welcome");
       }
     });
 
