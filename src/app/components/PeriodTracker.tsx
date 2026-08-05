@@ -16,7 +16,21 @@ interface PeriodTrackerProps {
   onBack: () => void;
 }
 
-const toDateOnly = (d: Date) => d.toISOString().slice(0, 10);
+// Format a Date as YYYY-MM-DD using LOCAL date parts (no UTC conversion,
+// so no timezone-related day-shift)
+const toDateOnly = (d: Date) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// Parse a YYYY-MM-DD string back into a local Date, avoiding the same
+// UTC-parsing pitfall on the way back in
+const parseDateOnly = (s: string) => {
+  const [year, month, day] = s.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
 
 export function PeriodTracker({ onBack }: PeriodTrackerProps) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
@@ -64,8 +78,8 @@ export function PeriodTracker({ onBack }: PeriodTrackerProps) {
       const data = json?.data;
 
       if (data?.start_date && data?.end_date) {
-        setRange({ from: new Date(data.start_date), to: new Date(data.end_date) });
-      }
+  setRange({ from: parseDateOnly(data.start_date), to: parseDateOnly(data.end_date) });
+}
       if (data?.cycle_length) setCycleLength(String(data.cycle_length));
       if (data?.period_length) setPeriodLength(String(data.period_length));
     } catch (e: any) {
