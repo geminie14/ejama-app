@@ -87,12 +87,18 @@ export default function App() {
     setAuthDialogOpen(false);
   };
 
-  const handleLogout = () => {
-    setAccessToken("");
-    setIsAuthenticated(false);
-    setUserName("");
-    setCurrentScreen("welcome");
-  };
+  const handleLogout = async () => {
+  try {
+    const supabase = getSupabaseClient();
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+  setAccessToken("");
+  setIsAuthenticated(false);
+  setUserName("");
+  setCurrentScreen("welcome");
+};
 
   const handleNavigate = (screen: string) => {
     setCurrentScreen(screen as Screen);
