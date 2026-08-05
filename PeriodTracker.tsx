@@ -105,31 +105,6 @@ const getDatesInRange = (from?: Date, to?: Date) => {
   return dates;
 };
 
-  
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,  
-      apikey: publicAnonKey,                   
-    },
-    body: JSON.stringify({ selectedDates, cycleLength, periodLength }),
-  }
-);
-
-      if (response.ok) {
-        toast.success("Tracking data saved successfully!");
-      } else {
-        const error = await response.json();
-        toast.error(error.error || "Failed to save tracking data");
-      }
-    } catch (error) {
-      console.error("Error saving tracking data (network issue or server not deployed):", error);
-      toast.error("Network error. Please check your connection and try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#E7DDFF] p-4">
       <div className="max-w-4xl mx-auto">
