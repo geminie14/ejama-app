@@ -129,18 +129,10 @@ if (!session?.access_token) {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      const supabase = getSupabaseClient();
-
-      await supabase.auth.signOut();
-      toast.success("Logged out successfully");
-      onLogout();
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Failed to logout");
-    }
-  };
+  const handleLogout = () => {
+  toast.success("Logged out successfully");
+  onLogout();
+};
 
   const getInitials = (name: string) => {
     if (!name) return "U";
