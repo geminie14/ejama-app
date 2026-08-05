@@ -112,41 +112,41 @@ export default function App() {
 
     init();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.access_token) {
-        setAccessToken(session.access_token);
-        setIsAuthenticated(true);
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+  if (session?.access_token) {
+    setAccessToken(session.access_token);
+    setIsAuthenticated(true);
 
-        const user = session.user;
-        setUserEmail(user.email || "");
+    const user = session.user;
+    setUserEmail(user.email || "");
 
-        const name =
-          user.user_metadata?.name ||
-          user.user_metadata?.full_name ||
-          user.email ||
-          "there";
+    const name =
+      user.user_metadata?.name ||
+      user.user_metadata?.full_name ||
+      user.email ||
+      "there";
 
-        const avatar =
-          user.user_metadata?.profile_picture ||
-          user.user_metadata?.avatar_url ||
-          user.user_metadata?.picture ||
-          "";
+    const avatar =
+      user.user_metadata?.profile_picture ||
+      user.user_metadata?.avatar_url ||
+      user.user_metadata?.picture ||
+      "";
 
-        setUserName(name);
-        setUserAvatar(avatar);
-      } else {
-        setAccessToken("");
-        setIsAuthenticated(false);
-        setUserName("");
-        setUserAvatar("");
-        setUserEmail("");
-        setCurrentScreen("welcome");
-        localStorage.removeItem(SCREEN_KEY);
+    setUserName(name);
+    setUserAvatar(avatar);
+  } else {
+    setAccessToken("");
+    setIsAuthenticated(false);
+    setUserName("");
+    setUserAvatar("");
+    setUserEmail("");
+    localStorage.removeItem(SCREEN_KEY);
 
-        if (event === "SIGNED_OUT") {
+    if (event === "SIGNED_OUT") {
       setCurrentScreen("welcome");
-      }
-    });
+    }
+  }
+});
 
     return () => sub.subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
