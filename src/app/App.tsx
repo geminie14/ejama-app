@@ -98,8 +98,14 @@ export default function App() {
         setUserName(name);
         setUserAvatar(avatar);
 
+        if (window.location.pathname === "/reset-password") {
+      setCurrentScreen("reset-password");
+    } else {
         const saved = loadSavedScreen();
         setCurrentScreen(saved && allowedScreens.includes(saved) ? saved : "home");
+      }
+  } else if (window.location.pathname === "/reset-password") {   
+        setCurrentScreen("reset-password");
       }
     };
 
