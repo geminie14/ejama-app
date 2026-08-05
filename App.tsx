@@ -52,6 +52,7 @@ export default function App() {
       if (window.location.pathname !== "/reset-password") {
         setCurrentScreen("home");
       }
+    }
     } catch (error) {
       console.error("Session check error:", error);
     }
