@@ -55,6 +55,15 @@ export function PeriodTracker({ onBack }: PeriodTrackerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Automatically derive period length from the selected date range
+useEffect(() => {
+  if (range?.from && range?.to) {
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const days = Math.round((range.to.getTime() - range.from.getTime()) / msPerDay) + 1;
+    setPeriodLength(String(days));
+  }
+}, [range]);
+
   const loadTrackingData = async () => {
     try {
       const token = await getAccessToken();
