@@ -285,9 +285,7 @@ export default function App() {
           />
         );
 
-      case "ask-question":
-        return requireToken(<AskQuestionScreen onBack={handleBack} accessToken={accessToken} />);
-
+    
       case "products":
         return <ProductsScreen onBack={handleBack} onNavigateToLocator={() => handleNavigate("locator")} />;
 
