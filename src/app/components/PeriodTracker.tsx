@@ -217,11 +217,12 @@ useEffect(() => {
                     id="periodLength"
                     type="number"
                     value={periodLength}
-                    onChange={(e) => setPeriodLength(e.target.value)}
-                    min="2"
-                    max="7"
-                    className="mt-1"
+                    readOnly
+                    className="mt-1 bg-gray-50"
                   />
+                  <p className="text-xs mt-1 text-gray-500">
+                    Calculated automatically from the days you selected above.
+                  </p>
                 </div>
 
                 <Button
