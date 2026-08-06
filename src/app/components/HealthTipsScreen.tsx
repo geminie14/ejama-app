@@ -50,7 +50,7 @@ export function HealthTipsScreen({ onBack, accessToken }: HealthTipsScreenProps)
   const loadBookmarksAndProgress = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/health-tips/user-data`,
+        `${supabaseUrl}/functions/v1/make-server-1aee76a8/health-tips/user-data`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -78,7 +78,7 @@ export function HealthTipsScreen({ onBack, accessToken }: HealthTipsScreenProps)
 
     try {
       await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/health-tips/bookmark`,
+        `${supabaseUrl}/functions/v1/make-server-1aee76a8/health-tips/bookmark`,
         {
           method: "POST",
           headers: {
@@ -101,7 +101,7 @@ export function HealthTipsScreen({ onBack, accessToken }: HealthTipsScreenProps)
 
     try {
       await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/health-tips/progress`,
+        `${supabaseUrl}/functions/v1/make-server-1aee76a8/health-tips/progress`,
         {
           method: "POST",
           headers: {
