@@ -295,6 +295,33 @@ export default function App() {
       case "education":
   return <EducationScreen onBack={handleBack} accessToken={accessToken} />;
 
+        case "settings":
+  return (
+    <SettingsScreen
+      onBack={handleBack}
+      onLogout={handleLogout}
+      accessToken={accessToken}
+      userName={userName}
+      userAvatar={userAvatar}
+      userEmail={userEmail}
+      onNavigate={(s) => handleNavigate(s as Screen)}
+    />
+  );
+
+case "feedback":
+  return <FeedbackScreen onBack={handleBack} />;
+
+case "reset-password":
+  return (
+    <ResetPasswordScreen
+      onDone={() => {
+        setCurrentScreen("welcome");
+        setAuthMode("login");
+        setAuthDialogOpen(true);
+      }}
+    />
+  );
+
 case "community":
   return <CommunityScreen onBack={handleBack} accessToken={accessToken} />;
 
