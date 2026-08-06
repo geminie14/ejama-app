@@ -52,7 +52,7 @@ export function EducationScreen({ onBack, accessToken }: EducationScreenProps) {
   const loadBookmarksAndProgress = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/education/user-data`,
+        ``${supabaseUrl}/functions/v1/make-server-1aee76a8/education/user-data`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -80,7 +80,7 @@ export function EducationScreen({ onBack, accessToken }: EducationScreenProps) {
 
     try {
       await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/education/bookmark`,
+        `${supabaseUrl}/functions/v1/make-server-1aee76a8/education/bookmark`,
         {
           method: "POST",
           headers: {
@@ -103,7 +103,7 @@ export function EducationScreen({ onBack, accessToken }: EducationScreenProps) {
 
     try {
       await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-1aee76a8/education/progress`,
+        `${supabaseUrl}/functions/v1/make-server-1aee76a8/education/progress`,
         {
           method: "POST",
           headers: {
