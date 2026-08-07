@@ -72,10 +72,10 @@ export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!code || code.trim().length < 6) {
-      toast.error("Please enter the 6-digit code from your email.");
-      return;
-    }
+    if (!code || code.trim().length < 8) {
+  toast.error("Please enter the 8-digit code from your email.");
+  return;
+}
 
     setLoading(true);
     try {
@@ -303,6 +303,18 @@ export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
                     placeholder="Confirm new password"
                     required
                   />
+               </div>
+                  
+                  <Input
+                    id="code"
+                    type="text"
+                   inputMode="numeric"
+                    maxLength={8}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                    placeholder="Enter 8-digit code"
+                    required
+                    />
                 </div>
 
                 <Button
