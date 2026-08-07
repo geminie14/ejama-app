@@ -9,12 +9,13 @@ export function getSupabaseClient(): SupabaseClient {
     if (!supabaseAnonKey) throw new Error("Supabase anon key missing");
 
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    });
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: "pkce",   // ← add this line
+  },
+});
   }
   return supabaseInstance;
 }
