@@ -144,10 +144,11 @@ export function AuthDialog({
     const supabase = getSupabaseClient();
 
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      // Optional: You can add redirectTo if you have a callback route
-      // options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
+    provider: "google",
+    options: {
+      redirectTo: "https://ejama-app.vercel.app",
+    },
+  });
 
     if (error) {
       toast.error(error.message);
