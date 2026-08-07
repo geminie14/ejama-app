@@ -740,7 +740,6 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
                   Start a new discussion
                 </Button>
               ) : (
-                ) : (
   <Card className="p-4 bg-white space-y-3">
     <p className="text-sm font-semibold" style={{ color: "#594F62" }}>
       Join to start a discussion
@@ -874,7 +873,7 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
                   medical help.
                 </p>
               </Card>
-            ) : (
+            
               ) : (
   <Card className="p-4 bg-white space-y-3">
     <p className="text-sm font-semibold" style={{ color: "#594F62" }}>
