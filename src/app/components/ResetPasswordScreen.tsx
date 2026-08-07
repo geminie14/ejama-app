@@ -11,33 +11,36 @@ interface ResetPasswordScreenProps {
   onDone: () => void;
 }
 
+type Step = "request" | "verify" | "newPassword";
+
 export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
+  const [step, setStep] = useState<Step>("request");
+
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // If user landed here from the email link, Supabase will set a recovery session.
-  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
-
+  // Fallback: if a user somehow still lands here via a working link
+  // (recovery session already active), skip straight to "set new password".
   useEffect(() => {
-    const checkRecovery = async () => {
+    const checkExistingRecoverySession = async () => {
       try {
         const supabase = getSupabaseClient();
         const { data } = await supabase.auth.getSession();
-        // In a recovery flow, session may exist after redirect
         if (data?.session?.access_token) {
-          setIsRecoveryMode(true);
+          setStep("newPassword");
         }
       } catch (e) {
-        // Not fatal
+        // Not fatal — just means no existing session, proceed with code flow
       }
     };
-
-    checkRecovery();
+    checkExistingRecoverySession();
   }, []);
 
-  const handleSendResetLink = async (e: React.FormEvent) => {
+  // Step 1: request a code be sent to the user's email
+  const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email) {
@@ -49,22 +52,15 @@ export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
     try {
       const supabase = getSupabaseClient();
 
-      // IMPORTANT: this must be a real URL reachable by the user.
-      // While local: window.location.origin will be localhost.
-      // Once deployed: it becomes your deployed domain automatically.
-      const redirectTo = `${window.location.origin}/reset-password`;
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo,
-      });
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
 
       if (error) {
         toast.error(error.message);
         return;
       }
 
-      toast.success("Password reset email sent! Please check your inbox.");
-      setEmail("");
+      toast.success("A reset code has been sent to your email.");
+      setStep("verify");
     } catch (err) {
       toast.error("An error occurred. Please try again.");
     } finally {
@@ -72,6 +68,40 @@ export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
     }
   };
 
+  // Step 2: verify the 6-digit code
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!code || code.trim().length < 6) {
+      toast.error("Please enter the 6-digit code from your email.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const supabase = getSupabaseClient();
+
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: code.trim(),
+        type: "recovery",
+      });
+
+      if (error) {
+        toast.error(error.message || "Invalid or expired code. Please try again.");
+        return;
+      }
+
+      toast.success("Code verified! Set your new password below.");
+      setStep("newPassword");
+    } catch (err) {
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 3: set the new password (session already established by verifyOtp)
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -101,12 +131,27 @@ export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
       setNewPassword("");
       setConfirmPassword("");
 
-      // Optional: sign out to force fresh login
       await supabase.auth.signOut();
-
       onDone();
     } catch (err) {
       toast.error("Could not update password. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setLoading(true);
+    try {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success("A new code has been sent to your email.");
+    } catch (err) {
+      toast.error("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -132,13 +177,13 @@ export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
             Reset Password
           </h1>
 
-          {!isRecoveryMode ? (
+          {step === "request" && (
             <>
               <p className="text-sm mb-6" style={{ color: "#776B7D" }}>
-                Enter your email address and we'll send you a link to reset your password.
+                Enter your email address and we'll send you a code to reset your password.
               </p>
 
-              <form onSubmit={handleSendResetLink} className="space-y-4">
+              <form onSubmit={handleRequestCode} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
                   <Input
@@ -157,7 +202,7 @@ export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
                   className="w-full text-white"
                   style={{ backgroundColor: "#A592AB" }}
                 >
-                  {loading ? "Sending..." : "Send Reset Link"}
+                  {loading ? "Sending..." : "Send Reset Code"}
                 </Button>
               </form>
 
@@ -173,14 +218,63 @@ export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
                   </button>
                 </p>
               </div>
+            </>
+          )}
+
+          {step === "verify" && (
+            <>
+              <p className="text-sm mb-6" style={{ color: "#776B7D" }}>
+                Enter the 6-digit code sent to <strong>{email}</strong>.
+              </p>
+
+              <form onSubmit={handleVerifyCode} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="code">Reset Code</Label>
+                  <Input
+                    id="code"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                    placeholder="Enter 6-digit code"
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full text-white"
+                  style={{ backgroundColor: "#A592AB" }}
+                >
+                  {loading ? "Verifying..." : "Verify Code"}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm" style={{ color: "#776B7D" }}>
+                  Didn't get a code?{" "}
+                  <button
+                    onClick={handleResendCode}
+                    disabled={loading}
+                    className="font-semibold hover:underline"
+                    style={{ color: "#A592AB" }}
+                  >
+                    Resend
+                  </button>
+                </p>
+              </div>
 
               <Card className="mt-6 p-4 border" style={{ backgroundColor: "#D4C4EC", borderColor: "#B2A0B9" }}>
                 <p className="text-sm text-center" style={{ color: "#594F62" }}>
-                  If you don't receive an email, check your spam folder or try again.
+                  If you don't receive a code, check your spam folder.
                 </p>
               </Card>
             </>
-          ) : (
+          )}
+
+          {step === "newPassword" && (
             <>
               <p className="text-sm mb-6" style={{ color: "#776B7D" }}>
                 Enter your new password below.
