@@ -755,7 +755,7 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
       Join Community
     </Button>
   </Card>
-)}
+))}
 
             {creatingThread && (
               <Card className="p-4 bg-white space-y-3">
