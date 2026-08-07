@@ -696,7 +696,7 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
                 Community Forums
               </h3>
               <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
-                Coming soon — you’ll be able to join communities and chat with others.
+                Tap a topic below to browse or start a discussion.
               </p>
             </Card>
 
