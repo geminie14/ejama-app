@@ -113,6 +113,9 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
   const COMMUNITY_DATA_URL = `${FUNCTIONS_BASE}/community/data`;
   const COMMUNITY_JOIN_URL = `${FUNCTIONS_BASE}/community/join`;
   const COMMUNITY_CREATE_URL = `${FUNCTIONS_BASE}/community/create`;
+  const THREAD_CREATE_URL = `${FUNCTIONS_BASE}/community/thread/create`;
+  const POST_CREATE_URL = `${FUNCTIONS_BASE}/community/post/create`;
+  const POST_LIKE_URL = `${FUNCTIONS_BASE}/community/post/like`;
 
   // ✅ Categories
   const [categories, setCategories] = useState<ForumCategory[]>(DEFAULT_CATEGORIES);
@@ -383,45 +386,80 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
     : "Ask questions anonymously and browse answers.";
 
   const createThread = () => {
-    if (!selectedCategoryId) return;
-    const title = newThreadTitle.trim();
-    if (!title) return;
+  if (!selectedCategoryId) return;
+  const title = newThreadTitle.trim();
+  if (!title) return;
 
-    const newThread: Thread = {
-      id: `t-${Date.now()}`,
-      categoryId: selectedCategoryId,
-      title,
-      createdBy: "You",
-      createdAt: "Just now",
-    };
-
-    setThreads((prev) => [newThread, ...prev]);
-    setNewThreadTitle("");
-    setCreatingThread(false);
-    setSelectedThreadId(newThread.id);
+  const newThread: Thread = {
+    id: `t-${Date.now()}`,
+    categoryId: selectedCategoryId,
+    title,
+    createdBy: "You",
+    createdAt: "Just now",
   };
 
-  const addPost = () => {
-    if (!selectedThreadId) return;
-    const text = newPostText.trim();
-    if (!text) return;
+  setThreads((prev) => [newThread, ...prev]);
+  setNewThreadTitle("");
+  setCreatingThread(false);
+  setSelectedThreadId(newThread.id);
+};
 
-    const newPost: Post = {
-      id: `p-${Date.now()}`,
-      threadId: selectedThreadId,
-      author: "You",
-      createdAt: nowLabel(),
-      content: text,
-      likes: 0,
-    };
+ const addPost = async () => {
+  if (!selectedThreadId) return;
+  const text = newPostText.trim();
+  if (!text) return;
+
+  try {
+    const res = await fetch(POST_CREATE_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ threadId: selectedThreadId, content: text }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      toast.error(data?.error || "Failed to post reply.");
+      return;
+    }
+
+    setPosts((prev) => [...prev, data.post]);
+    setNewPostText("");
+  } catch (e) {
+    console.error("addPost error:", e);
+    toast.error("Network error. Please try again.");
+  }
+};
 
     setPosts((prev) => [...prev, newPost]);
     setNewPostText("");
   };
 
-  const likePost = (postId: string) => {
-    setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, likes: p.likes + 1 } : p)));
-  };
+  const likePost = async (postId: string) => {
+  // Optimistic update
+  setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, likes: p.likes + 1 } : p)));
+
+  try {
+    const res = await fetch(POST_LIKE_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ postId }),
+    });
+
+    if (!res.ok) {
+      // Revert on failure
+      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, likes: p.likes - 1 } : p)));
+    }
+  } catch (e) {
+    console.error("likePost error:", e);
+    setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, likes: p.likes - 1 } : p)));
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#E7DDFF] p-4">
@@ -654,32 +692,27 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
             </Card>
 
             {categories.map((cat) => (
-              <Card key={cat.id} className="p-4 bg-white opacity-60 cursor-not-allowed">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="text-2xl">{cat.icon}</div>
+  <Card
+    key={cat.id}
+    className="p-4 bg-white cursor-pointer hover:shadow-md transition-shadow"
+    onClick={() => setSelectedCategoryId(cat.id)}
+  >
+    <div className="flex items-start justify-between gap-3">
+      <div className="text-2xl">{cat.icon}</div>
 
-                  <div className="flex-1">
-                    <h3 className="font-semibold" style={{ color: "#594F62" }}>
-                      {cat.title}
-                    </h3>
-                    <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
-                      {cat.description}
-                    </p>
+      <div className="flex-1">
+        <h3 className="font-semibold" style={{ color: "#594F62" }}>
+          {cat.title}
+        </h3>
+        <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+          {cat.description}
+        </p>
+      </div>
 
-                    <div
-                      className="mt-2 inline-flex items-center rounded-full px-3 py-1 text-xs"
-                      style={{ backgroundColor: "#F4F0FF", color: "#776B7D" }}
-                    >
-                      Coming soon
-                    </div>
-                  </div>
-
-                  <ChevronRight className="w-5 h-5 mt-1" style={{ color: "#9A92AB" }} />
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
+      <ChevronRight className="w-5 h-5 mt-1" style={{ color: "#9A92AB" }} />
+    </div>
+  </Card>
+))}
 
         {/* (Forums thread/post UI kept for later rollout) */}
         {selectedCategoryId && !selectedThreadId && (
