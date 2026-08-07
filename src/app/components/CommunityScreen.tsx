@@ -740,15 +740,23 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
                   Start a new discussion
                 </Button>
               ) : (
-                <Card className="p-4 bg-white">
-                  <p className="text-sm font-semibold" style={{ color: "#594F62" }}>
-                    Join to start a discussion
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "#776B7D" }}>
-                    You can browse topics, but you need to join this community to post.
-                  </p>
-                </Card>
-              ))}
+                ) : (
+  <Card className="p-4 bg-white space-y-3">
+    <p className="text-sm font-semibold" style={{ color: "#594F62" }}>
+      Join to start a discussion
+    </p>
+    <p className="text-xs mt-1" style={{ color: "#776B7D" }}>
+      You can browse topics, but you need to join this community to post.
+    </p>
+    <Button
+      className="w-full text-white"
+      style={{ backgroundColor: "#A592AB" }}
+      onClick={() => joinCommunity(selectedCategoryId)}
+    >
+      Join Community
+    </Button>
+  </Card>
+)}
 
             {creatingThread && (
               <Card className="p-4 bg-white space-y-3">
@@ -867,15 +875,23 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
                 </p>
               </Card>
             ) : (
-              <Card className="p-4 bg-white">
-                <p className="text-sm font-semibold" style={{ color: "#594F62" }}>
-                  Join to reply
-                </p>
-                <p className="text-xs mt-1" style={{ color: "#776B7D" }}>
-                  You can browse posts, but you need to join this community to participate.
-                </p>
-              </Card>
-            )}
+              ) : (
+  <Card className="p-4 bg-white space-y-3">
+    <p className="text-sm font-semibold" style={{ color: "#594F62" }}>
+      Join to reply
+    </p>
+    <p className="text-xs mt-1" style={{ color: "#776B7D" }}>
+      You can browse posts, but you need to join this community to participate.
+    </p>
+    <Button
+      className="w-full text-white"
+      style={{ backgroundColor: "#A592AB" }}
+      onClick={() => threadCategoryId && joinCommunity(threadCategoryId)}
+    >
+      Join Community
+    </Button>
+  </Card>
+)}
           </div>
         )}
       </div>
