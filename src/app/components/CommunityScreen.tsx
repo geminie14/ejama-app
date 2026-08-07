@@ -385,24 +385,36 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
     ? selectedCategory.description
     : "Ask questions anonymously and browse answers.";
 
-  const createThread = () => {
-  if (!selectedCategoryId) return;
-  const title = newThreadTitle.trim();
-  if (!title) return;
+  const createThread = async () => {
+    if (!selectedCategoryId) return;
+    const title = newThreadTitle.trim();
+    if (!title) return;
 
-  const newThread: Thread = {
-    id: `t-${Date.now()}`,
-    categoryId: selectedCategoryId,
-    title,
-    createdBy: "You",
-    createdAt: "Just now",
+    try {
+      const res = await fetch(THREAD_CREATE_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ categoryId: selectedCategoryId, title }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data?.error || "Failed to create discussion.");
+        return;
+      }
+
+      setThreads((prev) => [data.thread, ...prev]);
+      setNewThreadTitle("");
+      setCreatingThread(false);
+      setSelectedThreadId(data.thread.id);
+    } catch (e) {
+      console.error("createThread error:", e);
+      toast.error("Network error. Please try again.");
+    }
   };
-
-  setThreads((prev) => [newThread, ...prev]);
-  setNewThreadTitle("");
-  setCreatingThread(false);
-  setSelectedThreadId(newThread.id);
-};
 
  const addPost = async () => {
   if (!selectedThreadId) return;
@@ -431,10 +443,7 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
     console.error("addPost error:", e);
     toast.error("Network error. Please try again.");
   }
-};
 
-    setPosts((prev) => [...prev, newPost]);
-    setNewPostText("");
   };
 
   const likePost = async (postId: string) => {
@@ -692,28 +701,31 @@ const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1/make-server-1aee76a8`;
             </Card>
 
             {categories.map((cat) => (
-  <Card
-    key={cat.id}
-    className="p-4 bg-white cursor-pointer hover:shadow-md transition-shadow"
-    onClick={() => setSelectedCategoryId(cat.id)}
-  >
-    <div className="flex items-start justify-between gap-3">
-      <div className="text-2xl">{cat.icon}</div>
+              <Card
+                key={cat.id}
+                className="p-4 bg-white cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setSelectedCategoryId(cat.id)}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="text-2xl">{cat.icon}</div>
 
-      <div className="flex-1">
-        <h3 className="font-semibold" style={{ color: "#594F62" }}>
-          {cat.title}
-        </h3>
-        <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
-          {cat.description}
-        </p>
-      </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold" style={{ color: "#594F62" }}>
+                      {cat.title}
+                    </h3>
+                    <p className="text-sm mt-1" style={{ color: "#776B7D" }}>
+                      {cat.description}
+                    </p>
+                  </div>
 
-      <ChevronRight className="w-5 h-5 mt-1" style={{ color: "#9A92AB" }} />
-    </div>
-  </Card>
-))}
+                  <ChevronRight className="w-5 h-5 mt-1" style={{ color: "#9A92AB" }} />
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
 
+        {/* (Forums thread/post UI kept for later rollout) */}
         {/* (Forums thread/post UI kept for later rollout) */}
         {selectedCategoryId && !selectedThreadId && (
           <div className="space-y-3">
