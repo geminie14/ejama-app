@@ -149,4 +149,167 @@ export function ResetPasswordScreen({ onDone }: ResetPasswordScreenProps) {
     }
   };
 
-  return
+  return (
+    <div className="min-h-screen bg-[#E7DDFF] flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={onDone}
+            style={{ color: "#A592AB" }}
+            className="hover:bg-[#D4C4EC]"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
+
+        <Card className="p-8 bg-white">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: "#594F62" }}>
+            Reset Password
+          </h1>
+
+          {step === "request" && (
+            <>
+              <p className="text-sm mb-6" style={{ color: "#776B7D" }}>
+                Enter your email address and we'll send you a code to reset your password.
+              </p>
+
+              <form onSubmit={handleRequestCode} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full text-white"
+                  style={{ backgroundColor: "#A592AB" }}
+                >
+                  {loading ? "Sending..." : "Send Reset Code"}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm" style={{ color: "#776B7D" }}>
+                  Remember your password?{" "}
+                  <button
+                    onClick={onDone}
+                    className="font-semibold hover:underline"
+                    style={{ color: "#A592AB" }}
+                  >
+                    Back to Login
+                  </button>
+                </p>
+              </div>
+            </>
+          )}
+
+          {step === "verify" && (
+            <>
+              <p className="text-sm mb-6" style={{ color: "#776B7D" }}>
+                Enter the 8-digit code sent to <strong>{email}</strong>.
+              </p>
+
+              <form onSubmit={handleVerifyCode} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="code">Reset Code</Label>
+                  <Input
+                    id="code"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={8}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                    placeholder="Enter 8-digit code"
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full text-white"
+                  style={{ backgroundColor: "#A592AB" }}
+                >
+                  {loading ? "Verifying..." : "Verify Code"}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm" style={{ color: "#776B7D" }}>
+                  Didn't get a code?{" "}
+                  <button
+                    onClick={handleResendCode}
+                    disabled={loading}
+                    className="font-semibold hover:underline"
+                    style={{ color: "#A592AB" }}
+                  >
+                    Resend
+                  </button>
+                </p>
+              </div>
+
+              <Card className="mt-6 p-4 border" style={{ backgroundColor: "#D4C4EC", borderColor: "#B2A0B9" }}>
+                <p className="text-sm text-center" style={{ color: "#594F62" }}>
+                  If you don't receive a code, check your spam folder.
+                </p>
+              </Card>
+            </>
+          )}
+
+          {step === "newPassword" && (
+            <>
+              <p className="text-sm mb-6" style={{ color: "#776B7D" }}>
+                Enter your new password below.
+              </p>
+
+              <form onSubmit={handleUpdatePassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full text-white"
+                  style={{ backgroundColor: "#A592AB" }}
+                >
+                  {loading ? "Updating..." : "Update Password"}
+                </Button>
+              </form>
+            </>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+}
